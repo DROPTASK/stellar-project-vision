@@ -70,7 +70,7 @@ const Explore: React.FC = () => {
             className="btn-gradient"
           >
             <ExternalLink className="h-3.5 w-3.5 mr-1" />
-            Hydra Channel
+            {showHydraLinks ? "Show Projects" : "Hydra Channel"}
           </Button>
         </div>
 
@@ -108,9 +108,19 @@ const Explore: React.FC = () => {
         ) : (
           <ScrollArea className="h-[calc(100vh-200px)]">
             <div className={`space-y-4 mb-6`}>
-              {detailedProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
+              {detailedProjects.map((project) => {
+                // Add hydra links to the projects
+                const hydraLink = hydraLinks.find(link => 
+                  link.name.toLowerCase() === project.name.toLowerCase()
+                )?.url;
+                
+                return (
+                  <ProjectCard 
+                    key={project.id} 
+                    project={{...project, hydraLink}}
+                  />
+                );
+              })}
             </div>
             
             {simpleProjects.length > 0 && (
@@ -120,9 +130,19 @@ const Explore: React.FC = () => {
                 <div className="mb-4">
                   <h2 className="text-xl font-semibold mb-4">More Projects</h2>
                   <div className="space-y-2">
-                    {simpleProjects.map((project) => (
-                      <SimpleProjectCard key={project.id} project={project} />
-                    ))}
+                    {simpleProjects.map((project) => {
+                      // Add hydra links to the simple projects
+                      const hydraLink = hydraLinks.find(link => 
+                        link.name.toLowerCase() === project.name.toLowerCase()
+                      )?.url;
+                      
+                      return (
+                        <SimpleProjectCard 
+                          key={project.id} 
+                          project={{...project, hydraLink}}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               </>

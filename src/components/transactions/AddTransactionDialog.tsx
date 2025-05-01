@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { useAppStore } from '../../store/appStore';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AddTransactionDialogProps {
   isOpen: boolean;
@@ -31,20 +32,22 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [isCustomProject, setIsCustomProject] = useState(false);
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormValues>();
 
-  // Reset form when dialog opens
+  // Reset form when dialog opens or transaction type changes
   useEffect(() => {
     if (isOpen) {
       reset();
       setSelectedProject("");
       setIsCustomProject(false);
+      setValue('projectId', '');
     }
-  }, [isOpen, reset]);
+  }, [isOpen, transactionType, reset, setValue]);
 
   const handleProjectChange = (value: string) => {
     setSelectedProject(value);
     setIsCustomProject(value === "custom");
+    setValue('projectId', value === "custom" ? "" : value);
   };
 
   const onSubmit = (data: FormValues) => {
@@ -78,9 +81,11 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         amount,
         type: transactionType,
       });
-    } else {
+      
+      toast.success(`${transactionType === 'investment' ? 'Investment' : 'Earning'} added successfully`);
+    } else if (selectedProject) {
       // Add transaction for existing project
-      const project = projects.find(p => p.id === data.projectId);
+      const project = projects.find(p => p.id === selectedProject);
       
       if (project) {
         addTransaction({
@@ -90,12 +95,21 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
           amount,
           type: transactionType,
         });
+        
+        toast.success(`${transactionType === 'investment' ? 'Investment' : 'Earning'} added successfully`);
+      } else {
+        toast.error('Please select a valid project');
+        return;
       }
+    } else {
+      toast.error('Please select a project');
+      return;
     }
     
     reset();
+    setSelectedProject("");
+    setIsCustomProject(false);
     onClose();
-    toast.success(`${transactionType === 'investment' ? 'Investment' : 'Earning'} added successfully`);
   };
 
   return (
@@ -114,15 +128,17 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
               <SelectTrigger className="bg-muted/50">
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="custom">+ Add Custom Project</SelectItem>
-                </SelectGroup>
+              <SelectContent className="max-h-[200px]">
+                <ScrollArea className="h-[200px]">
+                  <SelectGroup>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">+ Add Custom Project</SelectItem>
+                  </SelectGroup>
+                </ScrollArea>
               </SelectContent>
             </Select>
             <input 
@@ -173,7 +189,6 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             <Button 
               type="submit" 
               className={transactionType === "investment" ? "btn-gradient" : "bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:opacity-90"}
-              disabled={(!selectedProject && !isCustomProject) || (selectedProject === "custom" && !isCustomProject)}
             >
               Add {transactionType === "investment" ? "Investment" : "Earning"}
             </Button>

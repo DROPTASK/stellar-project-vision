@@ -32,11 +32,11 @@ const Investment: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 pb-24">
+    <div className="container mx-auto px-2 sm:px-4 pb-24">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="text-center text-xl">
+            <CardTitle className="text-center text-lg sm:text-xl">
               Total Investment: ${totalInvestment.toLocaleString()}
             </CardTitle>
           </CardHeader>
@@ -44,7 +44,7 @@ const Investment: React.FC = () => {
         
         <Card className="glass-card">
           <CardHeader>
-            <CardTitle className="text-center text-xl">
+            <CardTitle className="text-center text-lg sm:text-xl">
               Total Earnings: ${totalEarning.toLocaleString()}
             </CardTitle>
           </CardHeader>
@@ -70,13 +70,13 @@ const Investment: React.FC = () => {
       </div>
       
       <Tabs defaultValue="investment" className="mt-6" onValueChange={handleTabChange}>
-        <TabsList className="grid grid-cols-2 mb-6">
+        <TabsList className="grid grid-cols-2 mb-6 w-full">
           <TabsTrigger value="investment">Investments</TabsTrigger>
           <TabsTrigger value="earning">Earnings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="investment" className="space-y-4">
-          <h2 className="text-lg font-semibold mb-3">Recent Investments</h2>
+          <h2 className="text-lg font-semibold mb-3">Recent</h2>
           <ScrollArea className={`${isMobile ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-420px)]'}`}>
             {transactions.filter(t => t.type === "investment").length > 0 ? (
               transactions
@@ -93,7 +93,7 @@ const Investment: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="earning" className="space-y-4">
-          <h2 className="text-lg font-semibold mb-3">Recent Earnings</h2>
+          <h2 className="text-lg font-semibold mb-3">Recent</h2>
           <ScrollArea className={`${isMobile ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-420px)]'}`}>
             {transactions.filter(t => t.type === "earning").length > 0 ? (
               transactions

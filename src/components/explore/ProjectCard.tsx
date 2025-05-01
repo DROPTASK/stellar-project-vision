@@ -4,6 +4,7 @@ import { ExploreProject } from '../../types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import ProjectDetail from './ProjectDetail';
+import { ExternalLink } from 'lucide-react';
 
 interface ProjectCardProps {
   project: ExploreProject;
@@ -69,12 +70,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <p className="text-sm line-clamp-2">{project.description || 'No description available'}</p>
       </div>
       
-      <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex justify-between items-center">
+        {project.hydraLink && (
+          <a 
+            href={project.hydraLink} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline flex items-center text-xs"
+          >
+            <ExternalLink size={14} className="mr-1" />
+            View in Hydra
+          </a>
+        )}
+        
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="mr-2">View Details</Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={project.hydraLink ? "" : "ml-auto"}
+            >
+              View Details
+            </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-accent/50">
+          <DialogContent className="glass-card border-accent/50 max-h-[90vh]">
             <DialogHeader>
               <DialogTitle className="font-display">{project.name}</DialogTitle>
             </DialogHeader>

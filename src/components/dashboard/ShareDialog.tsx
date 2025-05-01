@@ -17,7 +17,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   const { projects } = useAppStore();
   const imageRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const projectsPerPage = 12; // 3 columns × 4 rows
+  const projectsPerPage = 9; // 3 columns × 3 rows
   const totalPages = Math.ceil(projects.length / projectsPerPage);
   const isMobile = useIsMobile();
   
@@ -48,7 +48,14 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   const handleDownload = async () => {
     if (imageRef.current) {
       try {
-        const dataUrl = await toPng(imageRef.current, { quality: 0.95 });
+        const dataUrl = await toPng(imageRef.current, { 
+          quality: 0.95,
+          height: imageRef.current.scrollHeight,
+          width: imageRef.current.scrollWidth,
+          canvasHeight: imageRef.current.scrollHeight,
+          canvasWidth: imageRef.current.scrollWidth,
+          pixelRatio: 2
+        });
         const link = document.createElement('a');
         link.download = 'my-crypto-projects.png';
         link.href = dataUrl;
@@ -64,7 +71,14 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   const handleShare = async () => {
     if (imageRef.current) {
       try {
-        const dataUrl = await toPng(imageRef.current, { quality: 0.95 });
+        const dataUrl = await toPng(imageRef.current, { 
+          quality: 0.95,
+          height: imageRef.current.scrollHeight,
+          width: imageRef.current.scrollWidth,
+          canvasHeight: imageRef.current.scrollHeight,
+          canvasWidth: imageRef.current.scrollWidth,
+          pixelRatio: 2
+        });
         const blob = await (await fetch(dataUrl)).blob();
         const file = new File([blob], 'my-crypto-projects.png', { type: 'image/png' });
         
@@ -72,6 +86,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
           await navigator.share({
             files: [file],
             title: 'My Crypto Projects',
+            text: 'Generated using @dropdeck1_bot in Telegram'
           });
         } else {
           toast.error('Sharing not supported on this browser');
@@ -95,7 +110,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
         <div className="mt-4 flex flex-col items-center">
           <div 
             ref={imageRef} 
-            className="w-full max-h-[70vh] overflow-y-auto p-4 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-lg"
+            className="w-full p-4 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-lg"
           >
             <h2 className="text-xl font-display text-white text-center mb-4">My Projects</h2>
             
@@ -104,9 +119,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                 <div className="grid grid-cols-3 gap-3">
                   {paginatedProjects.map(project => (
                     <div key={project.id} className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center">
-                      <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
-                      
-                      <div className="w-full aspect-square my-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
+                      <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
                         {project.logo ? (
                           <img 
                             src={project.logo} 
@@ -119,6 +132,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                           </div>
                         )}
                       </div>
+                      <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
                     </div>
                   ))}
                 </div>
@@ -146,6 +160,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             ) : (
               <p className="text-white text-center">No projects added yet</p>
             )}
+            
+            <div className="text-white text-xs text-center mt-4">
+              Generated using @dropdeck1_bot in Telegram
+            </div>
           </div>
           
           <div className="flex gap-3 mt-4 w-full">
