@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2 } from 'lucide-react';
 import MetricCard from '../components/dashboard/MetricCard';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '../store/appStore';
@@ -8,10 +8,8 @@ import ProjectCard from '../components/dashboard/ProjectCard';
 import AddProjectDialog from '../components/dashboard/AddProjectDialog';
 import ShareDialog from '../components/dashboard/ShareDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card } from '@/components/ui/card';
 import GridProjectCard from '../components/dashboard/GridProjectCard';
-import { Pagination } from '@/components/ui/pagination';
-import { PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const Dashboard: React.FC = () => {
   const { projects, getTotalInvestment, getTotalEarning, getExpectedReturn } = useAppStore();
@@ -33,6 +31,18 @@ const Dashboard: React.FC = () => {
     (currentPage - 1) * projectsPerPage, 
     currentPage * projectsPerPage
   );
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(p => p - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(p => p + 1);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 pb-24">
@@ -140,8 +150,8 @@ const Dashboard: React.FC = () => {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious 
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
+                        onClick={handlePreviousPage}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
                     <PaginationItem className="flex items-center">
@@ -151,8 +161,8 @@ const Dashboard: React.FC = () => {
                     </PaginationItem>
                     <PaginationItem>
                       <PaginationNext 
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
+                        onClick={handleNextPage}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
                   </PaginationContent>
