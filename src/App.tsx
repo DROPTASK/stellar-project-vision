@@ -16,11 +16,11 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-gradient-to-b from-[#0F0F1A] to-[#1A1034]">
+    <BrowserRouter>
+      <div className="min-h-screen bg-gradient-to-b from-[#0F0F1A] to-[#1A1034]">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <Header />
           <main>
             <Routes>
@@ -32,9 +32,9 @@ const App = () => (
             </Routes>
           </main>
           <BottomNav />
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
+        </TooltipProvider>
+      </div>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
