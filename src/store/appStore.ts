@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, ProjectStat, Transaction, ExploreProject, AppState } from '../types';
+import { Project, ProjectStat, Transaction, ExploreProject, AppState, TodoItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import exploreCatalog from './exploreCatalog';
 
@@ -16,6 +16,12 @@ interface AppStore extends AppState {
   getTotalInvestment: () => number;
   getTotalEarning: () => number;
   getExpectedReturn: () => number;
+  
+  // Todo related functions
+  addTodo: (todo: Omit<TodoItem, 'id' | 'createdAt'>) => void;
+  toggleTodoCompletion: (id: string) => void;
+  removeTodo: (id: string) => void;
+  resetDailyTodos: () => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -24,6 +30,7 @@ export const useAppStore = create<AppStore>()(
       projects: [],
       transactions: [],
       exploreProjects: exploreCatalog,
+      todos: [],
 
       addProject: (project) => {
         const newProject = {
@@ -162,6 +169,39 @@ export const useAppStore = create<AppStore>()(
 
       getExpectedReturn: () => {
         return get().projects.reduce((sum, p) => sum + (p.expectedAmount || 0), 0);
+      },
+
+      // Todo functions
+      addTodo: (todo) => {
+        const newTodo = {
+          id: uuidv4(),
+          createdAt: new Date().toISOString(),
+          ...todo,
+        };
+        
+        set((state) => ({
+          todos: [...state.todos, newTodo],
+        }));
+      },
+
+      toggleTodoCompletion: (id) => {
+        set((state) => ({
+          todos: state.todos.map(todo => 
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+          ),
+        }));
+      },
+
+      removeTodo: (id) => {
+        set((state) => ({
+          todos: state.todos.filter(todo => todo.id !== id),
+        }));
+      },
+
+      resetDailyTodos: () => {
+        set((state) => ({
+          todos: state.todos.map(todo => ({ ...todo, completed: false })),
+        }));
       },
     }),
     {

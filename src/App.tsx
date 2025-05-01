@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Investment from "./pages/Investment";
 import Explore from "./pages/Explore";
+import Todo from "./pages/Todo";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import Header from "./components/layout/Header";
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/investment" element={<Investment />} />
               <Route path="/explore" element={<Explore />} />
+              <Route path="/todo" element={<Todo />} />
               <Route path="/support" element={<Support />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

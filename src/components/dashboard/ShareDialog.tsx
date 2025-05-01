@@ -1,10 +1,10 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAppStore } from '../../store/appStore';
 import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
-import { Share, Download } from 'lucide-react';
+import { Share, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ShareDialogProps {
@@ -15,6 +15,33 @@ interface ShareDialogProps {
 const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   const { projects } = useAppStore();
   const imageRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 12; // 3 columns × 4 rows
+  const totalPages = Math.ceil(projects.length / projectsPerPage);
+  
+  const paginatedProjects = projects.slice(
+    (currentPage - 1) * projectsPerPage, 
+    currentPage * projectsPerPage
+  );
+
+  useEffect(() => {
+    // Reset to page 1 when dialog opens
+    if (isOpen) {
+      setCurrentPage(1);
+    }
+  }, [isOpen]);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(p => p - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(p => p + 1);
+    }
+  };
   
   const handleDownload = async () => {
     if (imageRef.current) {
@@ -58,7 +85,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-accent/50 max-w-sm">
+      <DialogContent className="glass-card border-accent/50 max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-display">Share My Projects</DialogTitle>
         </DialogHeader>
@@ -71,43 +98,59 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             <h2 className="text-xl font-display text-white text-center mb-4">My Projects</h2>
             
             {projects.length > 0 ? (
-              <div className="space-y-3">
-                {projects.map(project => (
-                  <div key={project.id} className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex justify-between">
-                    <div>
-                      <h3 className="font-medium text-white">{project.name}</h3>
-                      <div className="grid grid-cols-3 gap-1 mt-1">
-                        <div className="text-left">
-                          <p className="text-xs text-gray-300">Invested</p>
-                          <p className="text-sm text-white">${project.investedAmount?.toLocaleString() || 0}</p>
-                        </div>
-                        <div className="text-left">
-                          <p className="text-xs text-gray-300">Expected</p>
-                          <p className="text-sm text-white">${project.expectedAmount?.toLocaleString() || 0}</p>
-                        </div>
-                        <div className="text-left">
-                          <p className="text-xs text-gray-300">Earned</p>
-                          <p className="text-sm text-white">${project.earnedAmount?.toLocaleString() || 0}</p>
-                        </div>
+              <>
+                <div className="grid grid-cols-3 gap-3">
+                  {paginatedProjects.map(project => (
+                    <div key={project.id} className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center">
+                      <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
+                      
+                      <div className="w-full aspect-square my-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
+                        {project.logo ? (
+                          <img 
+                            src={project.logo} 
+                            alt={`${project.name} logo`}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-indigo-700">
+                            {project.name.charAt(0)}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    
-                    <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0">
-                      {project.logo ? (
-                        <img 
-                          src={project.logo} 
-                          alt={`${project.name} logo`}
-                          className="object-cover w-full h-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-indigo-700">
-                          {project.name.charAt(0)}
+                      
+                      {project.stats && project.stats.length > 0 ? (
+                        <div className="flex flex-wrap justify-center gap-1 mt-1">
+                          {project.stats.map((stat, index) => (
+                            <div key={index} className="bg-muted/20 text-xs px-2 py-0.5 rounded-full text-white">
+                              {stat.amount} {stat.type}
+                            </div>
+                          ))}
                         </div>
-                      )}
+                      ) : null}
                     </div>
+                  ))}
+                </div>
+                
+                {totalPages > 1 && (
+                  <div className="flex justify-between items-center mt-4 text-white">
+                    <button 
+                      onClick={handlePreviousPage} 
+                      disabled={currentPage === 1}
+                      className={`flex items-center ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                    </button>
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <button 
+                      onClick={handleNextPage} 
+                      disabled={currentPage === totalPages}
+                      className={`flex items-center ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <p className="text-white text-center">No projects added yet</p>
             )}

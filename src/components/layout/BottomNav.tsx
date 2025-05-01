@@ -1,61 +1,39 @@
 
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, TrendingUp, Telescope, LifeBuoy } from 'lucide-react';
+import { Home, WalletCards, Compass, CheckSquare, HelpCircle } from 'lucide-react';
 
-const BottomNav: React.FC = () => {
+const navItems = [
+  { path: '/', icon: <Home size={20} />, text: 'Home' },
+  { path: '/investment', icon: <WalletCards size={20} />, text: 'Investment' },
+  { path: '/explore', icon: <Compass size={20} />, text: 'Explore' },
+  { path: '/todo', icon: <CheckSquare size={20} />, text: 'Todo' },
+  { path: '/support', icon: <HelpCircle size={20} />, text: 'Support' },
+];
+
+export default function BottomNav() {
   const location = useLocation();
-  const pathname = location.pathname;
   
-  const navItems = [
-    {
-      name: 'Dashboard',
-      icon: <LayoutDashboard size={20} />,
-      path: '/',
-      active: pathname === '/',
-    },
-    {
-      name: 'Investment',
-      icon: <TrendingUp size={20} />,
-      path: '/investment',
-      active: pathname === '/investment',
-    },
-    {
-      name: 'Explore',
-      icon: <Telescope size={20} />,
-      path: '/explore',
-      active: pathname === '/explore',
-    },
-    {
-      name: 'Support',
-      icon: <LifeBuoy size={20} />,
-      path: '/support',
-      active: pathname === '/support',
-    },
-  ];
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-t border-white/10">
-      <nav className="grid grid-cols-4 p-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/30">
+      <div className="flex justify-around items-center p-3 shadow-lg">
         {navItems.map((item) => (
           <Link
-            key={item.name}
+            key={item.path}
             to={item.path}
-            className={`flex flex-col items-center py-2 px-1 ${
-              item.active 
-                ? "text-accent" 
-                : "text-muted-foreground hover:text-foreground"
+            className={`flex flex-col items-center justify-center px-2 py-1 rounded-md transition-all duration-200 ${
+              location.pathname === item.path
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-primary'
             }`}
           >
-            <div className={`p-1 rounded-full ${item.active ? 'bg-accent/20' : ''}`}>
+            <div className="flex flex-col items-center">
               {item.icon}
+              <span className="text-xs mt-1">{item.text}</span>
             </div>
-            <span className="text-xs mt-1">{item.name}</span>
           </Link>
         ))}
-      </nav>
-    </div>
+      </div>
+      <div className="h-safe-area-bottom bg-black/30" />
+    </nav>
   );
-};
-
-export default BottomNav;
+}

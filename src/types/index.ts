@@ -37,8 +37,17 @@ export interface Transaction {
   type: "investment" | "earning";
 }
 
+export interface TodoItem {
+  id: string;
+  projectId: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+}
+
 export interface AppState {
   projects: Project[];
   transactions: Transaction[];
   exploreProjects: ExploreProject[];
+  todos: TodoItem[];
 }
