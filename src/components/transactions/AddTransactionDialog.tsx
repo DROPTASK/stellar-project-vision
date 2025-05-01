@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,15 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
 
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+      setSelectedProject("");
+      setIsCustomProject(false);
+    }
+  }, [isOpen, reset]);
+
   const handleProjectChange = (value: string) => {
     setSelectedProject(value);
     setIsCustomProject(value === "custom");
@@ -60,20 +69,15 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
         earnedAmount: transactionType === 'earning' ? amount : 0,
       };
       
-      addProject(newProject);
+      const newProjectId = addProject(newProject);
       
-      // Find the newly created project to get its ID
-      const createdProject = projects.find(p => p.name === data.customProjectName);
-      
-      if (createdProject) {
-        addTransaction({
-          projectId: createdProject.id,
-          projectName: createdProject.name,
-          projectLogo: createdProject.logo,
-          amount,
-          type: transactionType,
-        });
-      }
+      addTransaction({
+        projectId: newProjectId,
+        projectName: newProject.name,
+        projectLogo: newProject.logo,
+        amount,
+        type: transactionType,
+      });
     } else {
       // Add transaction for existing project
       const project = projects.find(p => p.id === data.projectId);
@@ -169,7 +173,7 @@ const AddTransactionDialog: React.FC<AddTransactionDialogProps> = ({
             <Button 
               type="submit" 
               className={transactionType === "investment" ? "btn-gradient" : "bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:opacity-90"}
-              disabled={(!isCustomProject && !selectedProject) || (selectedProject === "custom" && !isCustomProject)}
+              disabled={(!selectedProject && !isCustomProject) || (selectedProject === "custom" && !isCustomProject)}
             >
               Add {transactionType === "investment" ? "Investment" : "Earning"}
             </Button>

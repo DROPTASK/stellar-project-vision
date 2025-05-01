@@ -8,12 +8,14 @@ import TransactionItem from '../components/transactions/TransactionItem';
 import AddTransactionDialog from '../components/transactions/AddTransactionDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const Investment: React.FC = () => {
   const { transactions, getTotalInvestment, getTotalEarning } = useAppStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<"investment" | "earning">("investment");
   const [currentTab, setCurrentTab] = useState<"investment" | "earning">("investment");
+  const isMobile = useIsMobile();
   
   const totalInvestment = getTotalInvestment();
   const totalEarning = getTotalEarning();
@@ -69,13 +71,13 @@ const Investment: React.FC = () => {
       
       <Tabs defaultValue="investment" className="mt-6" onValueChange={handleTabChange}>
         <TabsList className="grid grid-cols-2 mb-6">
-          <TabsTrigger value="investment">Investment Transactions</TabsTrigger>
-          <TabsTrigger value="earning">Earning Transactions</TabsTrigger>
+          <TabsTrigger value="investment">Investments</TabsTrigger>
+          <TabsTrigger value="earning">Earnings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="investment" className="space-y-4">
           <h2 className="text-lg font-semibold mb-3">Recent Investments</h2>
-          <ScrollArea className="h-[calc(100vh-420px)]">
+          <ScrollArea className={`${isMobile ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-420px)]'}`}>
             {transactions.filter(t => t.type === "investment").length > 0 ? (
               transactions
                 .filter(t => t.type === "investment")
@@ -92,7 +94,7 @@ const Investment: React.FC = () => {
         
         <TabsContent value="earning" className="space-y-4">
           <h2 className="text-lg font-semibold mb-3">Recent Earnings</h2>
-          <ScrollArea className="h-[calc(100vh-420px)]">
+          <ScrollArea className={`${isMobile ? 'h-[calc(100vh-380px)]' : 'h-[calc(100vh-420px)]'}`}>
             {transactions.filter(t => t.type === "earning").length > 0 ? (
               transactions
                 .filter(t => t.type === "earning")

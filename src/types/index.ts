@@ -25,6 +25,7 @@ export interface ExploreProject {
   reward?: string;
   tge?: string;
   description?: string;
+  hydraLink?: string;
 }
 
 export interface Transaction {

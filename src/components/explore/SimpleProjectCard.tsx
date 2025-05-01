@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useAppStore } from '../../store/appStore';
 import { PlusCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import ProjectDetail from './ProjectDetail';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface SimpleProjectCardProps {
@@ -40,7 +39,7 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
 
   return (
     <>
-      <div className="flex justify-between items-center p-4 glass-card my-3 hover:blue-glow transition-all">
+      <div className="flex justify-between items-center p-3 glass-card my-2">
         <div className="flex items-center">
           <div className="h-9 w-9 rounded-md overflow-hidden bg-muted/30 flex-shrink-0">
             {project.logo ? (
@@ -62,24 +61,24 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button 
             variant="outline"
             size="sm"
-            className="text-xs h-8"
+            className="text-xs h-8 px-1 sm:px-2"
             onClick={() => setIsDetailDialogOpen(true)}
           >
             <ExternalLink className="h-3 w-3 mr-1" />
-            View Details
+            <span className="hidden sm:inline">View</span>
           </Button>
           
           <Button 
             onClick={handleAddProject}
             size="sm" 
-            className="btn-gradient text-xs h-8"
+            className="btn-gradient text-xs h-8 px-1 sm:px-2"
           >
             <PlusCircle className="h-3 w-3 mr-1" />
-            Add
+            <span className="hidden sm:inline">Add</span>
           </Button>
         </div>
       </div>
@@ -94,6 +93,13 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
             <p className="text-center text-muted-foreground">
               No detailed data available [will be available soon]
             </p>
+            <Button 
+              className="w-full mt-4 btn-gradient" 
+              onClick={() => window.open('https://t.me/Ezzy_Looters', '_blank')}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              View in Hydra Channel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

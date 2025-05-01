@@ -20,7 +20,7 @@ export default function BottomNav() {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center justify-center px-2 py-1 rounded-md transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center px-1 py-1 rounded-md transition-all duration-200 ${
               location.pathname === item.path
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-primary'
@@ -28,7 +28,7 @@ export default function BottomNav() {
           >
             <div className="flex flex-col items-center">
               {item.icon}
-              <span className="text-xs mt-1">{item.text}</span>
+              <span className="text-[10px] mt-1">{item.text}</span>
             </div>
           </Link>
         ))}

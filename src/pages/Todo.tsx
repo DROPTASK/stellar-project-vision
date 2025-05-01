@@ -19,11 +19,13 @@ import {
 } from '@radix-ui/react-checkbox';
 import { Check, Plus, Trash, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const Todo: React.FC = () => {
   const { projects, todos, addTodo, toggleTodoCompletion, removeTodo, resetDailyTodos } = useAppStore();
   const [newTask, setNewTask] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
+  const isMobile = useIsMobile();
 
   const handleAddTodo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,38 +79,35 @@ const Todo: React.FC = () => {
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <div className="container mx-auto px-4 pb-24">
+    <div className="container mx-auto px-3 sm:px-4 pb-24">
       <Card className="glass-card mb-6">
         <CardHeader>
-          <CardTitle className="text-center">
-            Daily Tasks Progress
+          <CardTitle className="text-center text-lg sm:text-xl flex flex-col items-center">
+            <div className="mb-2">Daily Tasks Progress</div>
+            <div className="text-base">
+              {completedTasks}/{totalTasks} Tasks Completed
+            </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-2xl font-bold">{completedTasks}/{totalTasks}</p>
-              <p className="text-sm text-muted-foreground">Tasks Completed</p>
+        <CardContent className="flex flex-col items-center">
+          <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center relative mb-3">
+            <div className="absolute inset-0 rounded-full" style={{
+              background: `conic-gradient(#8b5cf6 ${completionPercentage}%, transparent ${completionPercentage}%)`,
+              clipPath: 'circle(50% at 50% 50%)'
+            }}></div>
+            <div className="bg-black/30 rounded-full w-20 h-20 flex items-center justify-center z-10">
+              <span className="text-xl font-bold">{completionPercentage}%</span>
             </div>
-            <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center relative">
-              <div className="absolute inset-0 rounded-full" style={{
-                background: `conic-gradient(#8b5cf6 ${completionPercentage}%, transparent ${completionPercentage}%)`,
-                clipPath: 'circle(50% at 50% 50%)'
-              }}></div>
-              <div className="bg-black/30 rounded-full w-20 h-20 flex items-center justify-center z-10">
-                <span className="text-xl font-bold">{completionPercentage}%</span>
-              </div>
-            </div>
-            <Button onClick={handleResetTasks} variant="outline" className="flex items-center gap-1">
-              <RefreshCw size={16} /> Reset Progress
-            </Button>
           </div>
+          <Button onClick={handleResetTasks} size="sm" variant="outline" className="flex items-center gap-1">
+            <RefreshCw size={14} /> Reset Progress
+          </Button>
         </CardContent>
       </Card>
 
-      <form onSubmit={handleAddTodo} className="flex gap-2 mb-6">
+      <form onSubmit={handleAddTodo} className={`${isMobile ? 'flex flex-col' : 'flex'} gap-2 mb-6`}>
         <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-          <SelectTrigger className="w-[180px] bg-muted/50">
+          <SelectTrigger className={`${isMobile ? 'w-full' : 'w-[180px]'} bg-muted/50 mb-2 sm:mb-0`}>
             <SelectValue placeholder="Select a project" />
           </SelectTrigger>
           <SelectContent>
@@ -121,20 +120,22 @@ const Todo: React.FC = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-        <Input 
-          type="text"
-          placeholder="Add a new task..." 
-          value={newTask} 
-          onChange={(e) => setNewTask(e.target.value)}
-          className="flex-1 bg-muted/50"
-        />
-        <Button type="submit" className="btn-gradient">
-          <Plus size={18} />
-          Add Task
-        </Button>
+        <div className={`${isMobile ? 'w-full' : 'flex-1'} flex gap-2`}>
+          <Input 
+            type="text"
+            placeholder="Add a new task..." 
+            value={newTask} 
+            onChange={(e) => setNewTask(e.target.value)}
+            className="flex-1 bg-muted/50"
+          />
+          <Button type="submit" className="btn-gradient whitespace-nowrap">
+            <Plus size={18} />
+            Add
+          </Button>
+        </div>
       </form>
 
-      <ScrollArea className="h-[calc(100vh-330px)]">
+      <ScrollArea className="h-[calc(100vh-360px)]">
         {Object.entries(projectTodos).length > 0 ? (
           Object.entries(projectTodos).map(([projectId, { projectName, projectLogo, todos }]) => (
             <div key={projectId} className="mb-6">

@@ -6,6 +6,7 @@ import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
 import { Share, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsMobile } from '../../hooks/use-mobile';
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const projectsPerPage = 12; // 3 columns × 4 rows
   const totalPages = Math.ceil(projects.length / projectsPerPage);
+  const isMobile = useIsMobile();
   
   const paginatedProjects = projects.slice(
     (currentPage - 1) * projectsPerPage, 
@@ -117,16 +119,6 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                           </div>
                         )}
                       </div>
-                      
-                      {project.stats && project.stats.length > 0 ? (
-                        <div className="flex flex-wrap justify-center gap-1 mt-1">
-                          {project.stats.map((stat, index) => (
-                            <div key={index} className="bg-muted/20 text-xs px-2 py-0.5 rounded-full text-white">
-                              {stat.amount} {stat.type}
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -156,7 +148,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             )}
           </div>
           
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3 mt-4 w-full">
             <Button onClick={handleDownload} className="flex-1">
               <Download className="mr-2 h-4 w-4" />
               Download

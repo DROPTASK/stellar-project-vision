@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import exploreCatalog from './exploreCatalog';
 
 interface AppStore extends AppState {
-  addProject: (project: Omit<Project, 'id'>) => void;
+  addProject: (project: Omit<Project, 'id'>) => string;
   updateProject: (id: string, updates: Partial<Project>) => void;
   removeProject: (id: string) => void;
   addProjectStat: (projectId: string, stat: ProjectStat) => void;
@@ -33,8 +33,9 @@ export const useAppStore = create<AppStore>()(
       todos: [],
 
       addProject: (project) => {
+        const newProjectId = uuidv4();
         const newProject = {
-          id: uuidv4(),
+          id: newProjectId,
           ...project,
           investedAmount: project.investedAmount || 0,
           expectedAmount: project.expectedAmount || 0,
@@ -44,6 +45,7 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({
           projects: [...state.projects, newProject],
         }));
+        return newProjectId; // Return ID so it can be used immediately
       },
 
       updateProject: (id, updates) => {
