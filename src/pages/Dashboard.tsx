@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2 } from 'lucide-react';
+import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import MetricCard from '../components/dashboard/MetricCard';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '../store/appStore';
@@ -8,16 +8,31 @@ import ProjectCard from '../components/dashboard/ProjectCard';
 import AddProjectDialog from '../components/dashboard/AddProjectDialog';
 import ShareDialog from '../components/dashboard/ShareDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card } from '@/components/ui/card';
+import GridProjectCard from '../components/dashboard/GridProjectCard';
+import { Pagination } from '@/components/ui/pagination';
+import { PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 const Dashboard: React.FC = () => {
   const { projects, getTotalInvestment, getTotalEarning, getExpectedReturn } = useAppStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [displayMode, setDisplayMode] = useState<'list' | 'grid'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
   
   const totalProjects = projects.length;
   const totalInvestment = getTotalInvestment();
   const totalEarning = getTotalEarning();
   const expectedReturn = getExpectedReturn();
+
+  // Grid pagination
+  const projectsPerPage = 12; // 3 columns × 4 rows
+  const totalPages = Math.ceil(projects.length / projectsPerPage);
+  
+  const paginatedProjects = projects.slice(
+    (currentPage - 1) * projectsPerPage, 
+    currentPage * projectsPerPage
+  );
 
   return (
     <div className="container mx-auto px-4 pb-24">
@@ -68,27 +83,96 @@ const Dashboard: React.FC = () => {
       
       <div className="flex justify-between items-center mb-4 mt-6">
         <h2 className="text-xl font-semibold">My Projects</h2>
-        <span className="text-sm text-muted-foreground">{totalProjects} Projects</span>
-      </div>
-      
-      <ScrollArea className="h-[calc(100vh-380px)]">
-        {projects.length > 0 ? (
-          projects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))
-        ) : (
-          <div className="glass-card p-6 text-center">
-            <p className="text-muted-foreground">No projects added yet</p>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">{totalProjects} Projects</span>
+          <div className="flex border rounded overflow-hidden">
             <Button 
-              onClick={() => setIsAddDialogOpen(true)}
-              variant="link" 
-              className="mt-2"
+              variant={displayMode === 'list' ? 'default' : 'ghost'} 
+              size="sm" 
+              className="h-8 rounded-none"
+              onClick={() => setDisplayMode('list')}
             >
-              Add your first project
+              List
+            </Button>
+            <Button 
+              variant={displayMode === 'grid' ? 'default' : 'ghost'} 
+              size="sm"
+              className="h-8 rounded-none"
+              onClick={() => setDisplayMode('grid')}
+            >
+              Grid
             </Button>
           </div>
-        )}
-      </ScrollArea>
+        </div>
+      </div>
+      
+      {displayMode === 'list' ? (
+        <ScrollArea className="h-[calc(100vh-380px)]">
+          {projects.length > 0 ? (
+            projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))
+          ) : (
+            <div className="glass-card p-6 text-center">
+              <p className="text-muted-foreground">No projects added yet</p>
+              <Button 
+                onClick={() => setIsAddDialogOpen(true)}
+                variant="link" 
+                className="mt-2"
+              >
+                Add your first project
+              </Button>
+            </div>
+          )}
+        </ScrollArea>
+      ) : (
+        <div className="space-y-4">
+          {projects.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {paginatedProjects.map((project) => (
+                  <GridProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+              
+              {totalPages > 1 && (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
+                    <PaginationItem className="flex items-center">
+                      <span className="text-sm">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
+            </>
+          ) : (
+            <div className="glass-card p-6 text-center">
+              <p className="text-muted-foreground">No projects added yet</p>
+              <Button 
+                onClick={() => setIsAddDialogOpen(true)}
+                variant="link" 
+                className="mt-2"
+              >
+                Add your first project
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
       
       <AddProjectDialog 
         isOpen={isAddDialogOpen} 

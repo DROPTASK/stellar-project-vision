@@ -7,14 +7,18 @@ import { useAppStore } from '../store/appStore';
 import TransactionItem from '../components/transactions/TransactionItem';
 import AddTransactionDialog from '../components/transactions/AddTransactionDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Investment: React.FC = () => {
-  const { transactions } = useAppStore();
+  const { transactions, getTotalInvestment, getTotalEarning } = useAppStore();
   const [isInvestmentDialogOpen, setIsInvestmentDialogOpen] = useState(false);
   const [isEarningDialogOpen, setIsEarningDialogOpen] = useState(false);
   
   const investmentTransactions = transactions.filter(t => t.type === "investment");
   const earningTransactions = transactions.filter(t => t.type === "earning");
+
+  const totalInvestment = getTotalInvestment();
+  const totalEarning = getTotalEarning();
 
   return (
     <div className="container mx-auto px-4 pb-24">
@@ -25,6 +29,14 @@ const Investment: React.FC = () => {
         </TabsList>
         
         <TabsContent value="investment" className="space-y-4">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-center text-xl">
+                Total Investment: ${totalInvestment.toLocaleString()}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          
           <Button 
             onClick={() => setIsInvestmentDialogOpen(true)}
             className="btn-gradient w-full"
@@ -35,7 +47,7 @@ const Investment: React.FC = () => {
           
           <div className="mt-6">
             <h2 className="text-lg font-semibold mb-3">Recent Investments</h2>
-            <ScrollArea className="h-[calc(100vh-240px)]">
+            <ScrollArea className="h-[calc(100vh-320px)]">
               {investmentTransactions.length > 0 ? (
                 investmentTransactions.map((transaction) => (
                   <TransactionItem key={transaction.id} transaction={transaction} />
@@ -56,6 +68,14 @@ const Investment: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="earning" className="space-y-4">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-center text-xl">
+                Total Earnings: ${totalEarning.toLocaleString()}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          
           <Button 
             onClick={() => setIsEarningDialogOpen(true)}
             className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:opacity-90 w-full"
@@ -66,7 +86,7 @@ const Investment: React.FC = () => {
           
           <div className="mt-6">
             <h2 className="text-lg font-semibold mb-3">Recent Earnings</h2>
-            <ScrollArea className="h-[calc(100vh-240px)]">
+            <ScrollArea className="h-[calc(100vh-320px)]">
               {earningTransactions.length > 0 ? (
                 earningTransactions.map((transaction) => (
                   <TransactionItem key={transaction.id} transaction={transaction} />

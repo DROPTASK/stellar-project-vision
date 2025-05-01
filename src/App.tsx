@@ -17,8 +17,8 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <div className="min-h-screen bg-gradient-to-b from-[#0F0F1A] to-[#1A1034]">
-        <TooltipProvider>
+      <TooltipProvider>
+        <div className="min-h-screen bg-gradient-to-b from-[#0F0F1A] to-[#1A1034]">
           <Toaster />
           <Sonner />
           <Header />
@@ -32,8 +32,8 @@ const App = () => (
             </Routes>
           </main>
           <BottomNav />
-        </TooltipProvider>
-      </div>
+        </div>
+      </TooltipProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );

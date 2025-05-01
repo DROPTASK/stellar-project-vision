@@ -8,6 +8,12 @@ export interface Project {
   earnedAmount?: number;
   type?: string;
   isTestnet?: boolean;
+  stats?: ProjectStat[];
+}
+
+export interface ProjectStat {
+  amount: number;
+  type: string;
 }
 
 export interface ExploreProject {

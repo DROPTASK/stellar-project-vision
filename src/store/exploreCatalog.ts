@@ -1,4 +1,3 @@
-
 import { ExploreProject } from "../types";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -432,6 +431,77 @@ const exploreCatalog: ExploreProject[] = [
     reward: "",
     tge: "",
     description: ""
+  },
+  // Add the new projects
+  {
+    id: uuidv4(),
+    name: "ARI Wallet",
+    logo: "https://pbs.twimg.com/profile_images/1915022417623150592/CPRyN20l.jpg",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
+  },
+  {
+    id: uuidv4(),
+    name: "Xenea",
+    logo: "https://pbs.twimg.com/profile_images/1823995210797604864/1xxJfwVd.jpg",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
+  },
+  {
+    id: uuidv4(),
+    name: "Dvinlabs",
+    logo: "https://pbs.twimg.com/profile_images/1803854624501227520/6_iuwx6f.jpg",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
+  },
+  {
+    id: uuidv4(),
+    name: "Part of Dream",
+    logo: "https://pbs.twimg.com/profile_images/1893962929743015936/5fLY20v3.png",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
+  },
+  {
+    id: uuidv4(),
+    name: "Somania",
+    logo: "https://pbs.twimg.com/profile_images/1896736794810458112/9tsFttK2.jpg",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
+  },
+  {
+    id: uuidv4(),
+    name: "Ethereum Block Scout",
+    logo: "https://pbs.twimg.com/profile_images/1563254263161032704/1RBJKVcR.jpg",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
+  },
+  {
+    id: uuidv4(),
+    name: "Newton",
+    logo: "https://pbs.twimg.com/profile_images/1854520136902049792/6uf3L88f.jpg",
+    tags: ["hot"],
+    funding: "No Data",
+    reward: "POTENTIAL",
+    tge: "TBA",
+    description: "No detailed data available yet"
   },
 ];
 

@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Project, Transaction, ExploreProject, AppState } from '../types';
+import { Project, ProjectStat, Transaction, ExploreProject, AppState } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import exploreCatalog from './exploreCatalog';
 
@@ -9,6 +9,7 @@ interface AppStore extends AppState {
   addProject: (project: Omit<Project, 'id'>) => void;
   updateProject: (id: string, updates: Partial<Project>) => void;
   removeProject: (id: string) => void;
+  addProjectStat: (projectId: string, stat: ProjectStat) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   removeTransaction: (id: string) => void;
   addProjectFromExplore: (exploreProjectId: string, additionalDetails: Partial<Project>) => void;
@@ -31,6 +32,7 @@ export const useAppStore = create<AppStore>()(
           investedAmount: project.investedAmount || 0,
           expectedAmount: project.expectedAmount || 0,
           earnedAmount: project.earnedAmount || 0,
+          stats: project.stats || [],
         };
         set((state) => ({
           projects: [...state.projects, newProject],
@@ -48,6 +50,19 @@ export const useAppStore = create<AppStore>()(
       removeProject: (id) => {
         set((state) => ({
           projects: state.projects.filter((project) => project.id !== id),
+        }));
+      },
+
+      addProjectStat: (projectId, stat) => {
+        set((state) => ({
+          projects: state.projects.map((project) => 
+            project.id === projectId 
+              ? { 
+                  ...project, 
+                  stats: [...(project.stats || []), stat] 
+                }
+              : project
+          ),
         }));
       },
 
@@ -128,6 +143,7 @@ export const useAppStore = create<AppStore>()(
             earnedAmount: additionalDetails.earnedAmount || 0,
             type: additionalDetails.type || '',
             isTestnet: additionalDetails.isTestnet || false,
+            stats: [],
           };
           
           set((state) => ({
@@ -137,15 +153,11 @@ export const useAppStore = create<AppStore>()(
       },
 
       getTotalInvestment: () => {
-        return get().transactions
-          .filter(t => t.type === "investment")
-          .reduce((sum, t) => sum + t.amount, 0);
+        return get().projects.reduce((sum, p) => sum + (p.investedAmount || 0), 0);
       },
 
       getTotalEarning: () => {
-        return get().transactions
-          .filter(t => t.type === "earning")
-          .reduce((sum, t) => sum + t.amount, 0);
+        return get().projects.reduce((sum, p) => sum + (p.earnedAmount || 0), 0);
       },
 
       getExpectedReturn: () => {

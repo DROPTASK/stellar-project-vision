@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { ExploreProject } from '../../types';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAppStore } from '../../store/appStore';
+import { PlusCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import ProjectDetail from './ProjectDetail';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface SimpleProjectCardProps {
   project: ExploreProject;
@@ -14,150 +14,86 @@ interface SimpleProjectCardProps {
 
 const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
   const { addProjectFromExplore } = useAppStore();
-  const [investedAmount, setInvestedAmount] = useState("");
-  const [expectedAmount, setExpectedAmount] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   
-  const handleAddToMyProjects = () => {
-    addProjectFromExplore(project.id, {
-      investedAmount: parseFloat(investedAmount) || 0,
-      expectedAmount: parseFloat(expectedAmount) || 0,
-    });
-    
+  const handleAddProject = () => {
+    addProjectFromExplore(project.id, {});
     toast.success(`${project.name} added to your projects`);
-    setInvestedAmount("");
-    setExpectedAmount("");
-    setIsDialogOpen(false);
   };
-  
+
+  const renderTags = () => {
+    if (!project.tags || project.tags.length === 0) return null;
+    
+    return (
+      <div className="flex flex-wrap gap-1 mt-1">
+        {project.tags.map((tag, index) => (
+          <span 
+            key={index} 
+            className={`tag ${tag === 'hot' ? 'tag-hot' : tag === 'potential' ? 'tag-potential' : tag === 's2' || tag === 's5' ? 'tag-s2' : tag === 'huge' ? 'tag-huge' : tag === 'soon' ? 'tag-soon' : ''}`}
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <>
-      <div className="glass-card flex justify-between p-3 mb-3">
+      <div className="flex justify-between items-center p-4 glass-card my-3 hover:blue-glow transition-all">
         <div className="flex items-center">
-          <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted mr-3">
+          <div className="h-9 w-9 rounded-md overflow-hidden bg-muted/30 flex-shrink-0">
             {project.logo ? (
               <img 
                 src={project.logo} 
-                alt={`${project.name} logo`}
-                className="object-cover w-full h-full"
+                alt={`${project.name} logo`} 
+                className="h-full w-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-primary">
+              <div className="h-full w-full flex items-center justify-center bg-gradient-primary">
                 {project.name.charAt(0)}
               </div>
             )}
           </div>
           
-          <div>
-            <h3 className="font-medium">{project.name}</h3>
-            <div className="flex gap-1 mt-0.5">
-              {project.tags.map((tag, index) => (
-                <span 
-                  key={index} 
-                  className={`tag ${
-                    tag === 'hot' ? 'tag-hot' : 
-                    tag === 'potential' ? 'tag-potential' : 
-                    tag === 's2' || tag === 's5' ? `tag-${tag}` :
-                    tag === 'huge' ? 'tag-huge' :
-                    tag === 'soon' ? 'tag-soon' :
-                    'bg-gray-500/70 text-white'
-                  }`}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
+          <div className="ml-3">
+            <p className="font-semibold text-sm">{project.name}</p>
+            {renderTags()}
           </div>
         </div>
         
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="self-center"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          Add
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline"
+            size="sm"
+            className="text-xs h-8"
+            onClick={() => setIsDetailDialogOpen(true)}
+          >
+            <ExternalLink className="h-3 w-3 mr-1" />
+            View Details
+          </Button>
+          
+          <Button 
+            onClick={handleAddProject}
+            size="sm" 
+            className="btn-gradient text-xs h-8"
+          >
+            <PlusCircle className="h-3 w-3 mr-1" />
+            Add
+          </Button>
+        </div>
       </div>
-      
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
         <DialogContent className="glass-card border-accent/50">
           <DialogHeader>
-            <DialogTitle className="font-display">Add {project.name}</DialogTitle>
+            <DialogTitle className="font-display">{project.name} Details</DialogTitle>
           </DialogHeader>
-          
-          <div className="flex items-center mt-4">
-            <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted mr-4">
-              {project.logo ? (
-                <img 
-                  src={project.logo} 
-                  alt={`${project.name} logo`}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-primary">
-                  {project.name.charAt(0)}
-                </div>
-              )}
-            </div>
-            
-            <div>
-              <h3 className="font-medium text-lg">{project.name}</h3>
-              <div className="flex gap-1 mt-0.5">
-                {project.tags.map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className={`tag ${
-                      tag === 'hot' ? 'tag-hot' : 
-                      tag === 'potential' ? 'tag-potential' : 
-                      tag === 's2' || tag === 's5' ? `tag-${tag}` :
-                      tag === 'huge' ? 'tag-huge' :
-                      tag === 'soon' ? 'tag-soon' :
-                      'bg-gray-500/70 text-white'
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-4 mt-4">
-            <div className="grid gap-2">
-              <Label htmlFor="investedAmount">Invested Amount</Label>
-              <Input 
-                id="investedAmount" 
-                type="number" 
-                step="any"
-                className="bg-muted/50"
-                placeholder="0.00"
-                value={investedAmount}
-                onChange={(e) => setInvestedAmount(e.target.value)}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="expectedAmount">Expected Amount</Label>
-              <Input 
-                id="expectedAmount" 
-                type="number" 
-                step="any"
-                className="bg-muted/50"
-                placeholder="0.00"
-                value={expectedAmount}
-                onChange={(e) => setExpectedAmount(e.target.value)}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddToMyProjects} className="btn-gradient">
-                Add Project
-              </Button>
-            </div>
+
+          <div className="mt-4 p-4 bg-muted/20 rounded-lg">
+            <p className="text-center text-muted-foreground">
+              No detailed data available [will be available soon]
+            </p>
           </div>
         </DialogContent>
       </Dialog>
