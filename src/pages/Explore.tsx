@@ -18,6 +18,31 @@ const Explore: React.FC = () => {
   const detailedProjects = exploreProjects.slice(0, 10);
   const simpleProjects = exploreProjects.slice(10);
 
+  // Add emojis to project details
+  const processedProjects = exploreProjects.map(project => {
+    const processed = {...project};
+    
+    // Add emojis to funding information if it exists
+    if (processed.info?.funding) {
+      processed.info.funding = `💵 ${processed.info.funding}`;
+    }
+    
+    // Add emojis to reward information if it exists
+    if (processed.info?.reward) {
+      processed.info.reward = `👌 ${processed.info.reward}`;
+    }
+    
+    // Add emojis to TGE information if it exists
+    if (processed.info?.tge) {
+      processed.info.tge = `🗓 ${processed.info.tge}`;
+    }
+    
+    return processed;
+  });
+  
+  const processedDetailedProjects = processedProjects.slice(0, 10);
+  const processedSimpleProjects = processedProjects.slice(10);
+
   const hydraLinks = [
     { name: 'GiveRep', url: 'https://t.me/Ezzy_Looters/23786', focus: 'Must Focus' },
     { name: 'Momentum', url: 'https://t.me/Ezzy_Looters/23331', focus: 'Must Focus' },
@@ -108,7 +133,7 @@ const Explore: React.FC = () => {
         ) : (
           <ScrollArea className="h-[calc(100vh-200px)]">
             <div className={`space-y-4 mb-6`}>
-              {detailedProjects.map((project) => {
+              {processedDetailedProjects.map((project) => {
                 // Add hydra links to the projects
                 const hydraLink = hydraLinks.find(link => 
                   link.name.toLowerCase() === project.name.toLowerCase()
@@ -123,14 +148,14 @@ const Explore: React.FC = () => {
               })}
             </div>
             
-            {simpleProjects.length > 0 && (
+            {processedSimpleProjects.length > 0 && (
               <>
                 <Separator className="my-6 bg-white/10" />
                 
                 <div className="mb-4">
                   <h2 className="text-xl font-semibold mb-4">More Projects</h2>
                   <div className="space-y-2">
-                    {simpleProjects.map((project) => {
+                    {processedSimpleProjects.map((project) => {
                       // Add hydra links to the simple projects
                       const hydraLink = hydraLinks.find(link => 
                         link.name.toLowerCase() === project.name.toLowerCase()

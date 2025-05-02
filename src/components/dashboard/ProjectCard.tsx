@@ -10,6 +10,7 @@ import { useAppStore } from '../../store/appStore';
 import { PlusCircle } from 'lucide-react';
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';
 import { toast } from 'sonner';
+import { formatCompactNumber } from '../../lib/utils';
 
 interface ProjectCardProps {
   project: Project;
@@ -61,15 +62,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <div className="grid grid-cols-3 gap-2 mt-2">
           <div>
             <p className="text-xs text-muted-foreground">Invested</p>
-            <p className="text-sm">${project.investedAmount?.toLocaleString() || 0}</p>
+            <p className="text-sm">${formatCompactNumber(project.investedAmount || 0)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Expected</p>
-            <p className="text-sm">${project.expectedAmount?.toLocaleString() || 0}</p>
+            <p className="text-sm">${formatCompactNumber(project.expectedAmount || 0)}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Earned</p>
-            <p className="text-sm">${project.earnedAmount?.toLocaleString() || 0}</p>
+            <p className="text-sm">${formatCompactNumber(project.earnedAmount || 0)}</p>
           </div>
         </div>
 
@@ -79,7 +80,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             <div className="flex flex-wrap gap-1">
               {project.stats.map((stat, index) => (
                 <div key={index} className="bg-muted/30 text-xs px-2 py-0.5 rounded-full">
-                  {stat.amount} {stat.type}
+                  {formatCompactNumber(stat.amount)} {stat.type}
                 </div>
               ))}
             </div>

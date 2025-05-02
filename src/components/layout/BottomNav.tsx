@@ -4,10 +4,10 @@ import { Home, WalletCards, Compass, CheckSquare, HelpCircle } from 'lucide-reac
 
 const navItems = [
   { path: '/', icon: <Home size={18} />, text: 'Home' },
-  { path: '/investment', icon: <WalletCards size={18} />, text: 'Investment' },
+  { path: '/investment', icon: <WalletCards size={18} />, text: 'Invest' },
   { path: '/explore', icon: <Compass size={18} />, text: 'Explore' },
   { path: '/todo', icon: <CheckSquare size={18} />, text: 'Todo' },
-  { path: '/support', icon: <HelpCircle size={18} />, text: 'Support' },
+  { path: '/support', icon: <HelpCircle size={18} />, text: 'Help' },
 ];
 
 export default function BottomNav() {
@@ -28,7 +28,7 @@ export default function BottomNav() {
           >
             <div className="flex flex-col items-center">
               {item.icon}
-              <span className="text-[9px] mt-1">{item.text}</span>
+              <span className="text-[9px] mt-0.5">{item.text}</span>
             </div>
           </Link>
         ))}
