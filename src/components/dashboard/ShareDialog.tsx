@@ -8,9 +8,9 @@ import { Share, Download, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { formatCompactNumber } from '../../lib/utils';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -36,10 +36,15 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     stats: true,
   });
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const projectsPerPage = 9; // 3×3 grid
+  
   // Initialize selected projects when dialog opens
   React.useEffect(() => {
     if (isOpen) {
       setSelectedProjects(projects.map(p => p.id));
+      setCurrentPage(1); // Reset to first page when opening
     }
   }, [isOpen, projects]);
   
@@ -62,6 +67,24 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   
   // Filter projects based on selection
   const filteredProjects = projects.filter(project => selectedProjects.includes(project.id));
+  
+  // Get current page projects
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+  
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
   
   const handleDownload = async () => {
     if (imageRef.current) {
@@ -141,7 +164,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
       text += `○ **${project.name}**\n`;
       
       if (displayOptions.investment) {
-        text += `- *Invested: $${formatCompactNumber(project.investedAmount || 0)}*\n`;
+        text += `- *Investment: $${formatCompactNumber(project.investedAmount || 0)}*\n`;
       }
       
       if (displayOptions.earning) {
@@ -219,18 +242,20 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">Select Projects</Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="max-h-60 overflow-y-auto">
-              <DropdownMenuLabel>Choose Projects</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {projects.map(project => (
-                <DropdownMenuCheckboxItem 
-                  key={project.id}
-                  checked={selectedProjects.includes(project.id)}
-                  onCheckedChange={() => toggleProjectSelection(project.id)}
-                >
-                  {project.name}
-                </DropdownMenuCheckboxItem>
-              ))}
+            <DropdownMenuContent className="max-h-60 overflow-auto">
+              <ScrollArea className="h-60 pr-4">
+                <DropdownMenuLabel>Choose Projects</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {projects.map(project => (
+                  <DropdownMenuCheckboxItem 
+                    key={project.id}
+                    checked={selectedProjects.includes(project.id)}
+                    onCheckedChange={() => toggleProjectSelection(project.id)}
+                  >
+                    {project.name}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -243,10 +268,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             >
               <h2 className="text-xl font-display text-white text-center mb-4">My Projects</h2>
               
-              {filteredProjects.length > 0 ? (
+              {currentProjects.length > 0 ? (
                 <div className="grid grid-cols-3 gap-3">
-                  {filteredProjects.map(project => (
-                    <div key={project.id} className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center">
+                  {currentProjects.map(project => (
+                    <div key={project.id} className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center w-full" style={{ aspectRatio: '1/1', maxWidth: '100%' }}>
                       <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
                         {project.logo ? (
                           <img 
@@ -262,25 +287,25 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                       </div>
                       <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
                       
-                      <div className="mt-1 flex flex-col items-center gap-1">
+                      <div className="mt-1 flex flex-col items-center gap-1 w-full">
                         {displayOptions.investment && (
-                          <div className="text-xs text-white/90">
-                            Inv: ${formatCompactNumber(project.investedAmount || 0)}
+                          <div className="text-xs text-white/90 truncate w-full text-center">
+                            Investment: ${formatCompactNumber(project.investedAmount || 0)}
                           </div>
                         )}
                         {displayOptions.earning && (
-                          <div className="text-xs text-white/90">
+                          <div className="text-xs text-white/90 truncate w-full text-center">
                             Earned: ${formatCompactNumber(project.earnedAmount || 0)}
                           </div>
                         )}
                         {displayOptions.expected && (
-                          <div className="text-xs text-white/90">
-                            Exp: ${formatCompactNumber(project.expectedAmount || 0)}
+                          <div className="text-xs text-white/90 truncate w-full text-center">
+                            Expected: ${formatCompactNumber(project.expectedAmount || 0)}
                           </div>
                         )}
                         {displayOptions.stats && project.stats && project.stats.length > 0 && (
                           project.stats.map((stat, index) => (
-                            <div key={index} className="text-xs text-white/90">
+                            <div key={index} className="text-xs text-white/90 truncate w-full text-center">
                               {stat.type}: {formatCompactNumber(stat.amount)}
                             </div>
                           ))
@@ -299,6 +324,30 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             </div>
           </ScrollArea>
         </div>
+        
+        {totalPages > 1 && filteredProjects.length > 0 && (
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={handlePreviousPage}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              <PaginationItem className="flex items-center">
+                <span className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={handleNextPage}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
         
         <div className="flex gap-3 mt-4">
           <Button onClick={handleCopyText} className="flex-1" variant="outline">
