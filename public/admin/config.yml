@@ -1,11 +1,9 @@
 backend:
   name: github
-  repo: DROPTASK/stellar-project-vision  # your GitHub repo
+  repo: DROPTASK/stellar-project-vision
   branch: main
-  base_url: https://api.netlify.com
-  auth_endpoint: auth
 
-media_folder: "static/uploads"
+media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
