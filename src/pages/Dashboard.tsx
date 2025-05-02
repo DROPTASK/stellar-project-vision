@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2 } from 'lucide-react';
 import MetricCard from '../components/dashboard/MetricCard';
@@ -60,7 +59,7 @@ const Dashboard: React.FC = () => {
         <MetricCard 
           title="Total Projects" 
           value={totalProjects}
-          valuePrefix=""  // Remove $ symbol
+          valuePrefix=""  // Empty string for no prefix
           icon={<LayoutDashboard className="h-5 w-5 text-purple-400" />} 
         />
         <MetricCard 

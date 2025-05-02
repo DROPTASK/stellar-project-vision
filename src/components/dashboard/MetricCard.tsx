@@ -5,9 +5,10 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   icon: React.ReactNode;
+  valuePrefix?: string; // Add the optional valuePrefix property
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon }) => {
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, valuePrefix = '$' }) => {
   return (
     <div className="metric-card">
       <div className="flex items-center mb-3">
@@ -17,7 +18,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon }) => {
         <h3 className="text-muted-foreground font-medium text-sm">{title}</h3>
       </div>
       <p className="text-2xl font-display font-semibold tracking-wider">
-        {typeof value === 'number' ? `$${value.toLocaleString()}` : value}
+        {typeof value === 'number' ? `${valuePrefix}${value.toLocaleString()}` : value}
       </p>
     </div>
   );
