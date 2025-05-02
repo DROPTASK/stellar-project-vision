@@ -23,9 +23,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   
   const editForm = useForm({
     defaultValues: {
-      investedAmount: project.investedAmount || 0,
       expectedAmount: project.expectedAmount || 0,
-      earnedAmount: project.earnedAmount || 0,
     },
   });
 
@@ -36,11 +34,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     },
   });
 
-  const onEditSubmit = (data: { investedAmount: number; expectedAmount: number; earnedAmount: number }) => {
+  const onEditSubmit = (data: { expectedAmount: number }) => {
     updateProject(project.id, {
-      investedAmount: parseFloat(data.investedAmount.toString()),
       expectedAmount: parseFloat(data.expectedAmount.toString()),
-      earnedAmount: parseFloat(data.earnedAmount.toString()),
     });
     setIsEditDialogOpen(false);
     toast.success('Project stats updated');
@@ -106,25 +102,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <div className="flex flex-col items-end gap-1">
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-xs">Edit Stats</Button>
+              <Button variant="ghost" size="sm" className="text-xs">Edit Expected</Button>
             </DialogTrigger>
             <DialogContent className="glass-card border-accent/50">
               <DialogHeader>
-                <DialogTitle className="font-display">Edit {project.name}</DialogTitle>
+                <DialogTitle className="font-display">Edit {project.name} Expected Return</DialogTitle>
               </DialogHeader>
               
               <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="investedAmount">Invested Amount</Label>
-                  <Input 
-                    id="investedAmount" 
-                    type="number" 
-                    className="bg-muted/50"
-                    step="any"
-                    {...editForm.register('investedAmount')}
-                  />
-                </div>
-                
                 <div className="grid gap-2">
                   <Label htmlFor="expectedAmount">Expected Amount</Label>
                   <Input 
@@ -133,17 +118,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
                     className="bg-muted/50"
                     step="any"
                     {...editForm.register('expectedAmount')}
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="earnedAmount">Earned Amount</Label>
-                  <Input 
-                    id="earnedAmount" 
-                    type="number" 
-                    className="bg-muted/50"
-                    step="any"
-                    {...editForm.register('earnedAmount')}
                   />
                 </div>
                 

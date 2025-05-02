@@ -59,7 +59,8 @@ const Dashboard: React.FC = () => {
         />
         <MetricCard 
           title="Total Projects" 
-          value={totalProjects} 
+          value={totalProjects}
+          valuePrefix=""  // Remove $ symbol
           icon={<LayoutDashboard className="h-5 w-5 text-purple-400" />} 
         />
         <MetricCard 
