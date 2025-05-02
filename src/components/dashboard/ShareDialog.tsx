@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAppStore } from '../../store/appStore';
@@ -212,6 +211,18 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     return 'grid-cols-3';
   };
   
+  // Calculate the appropriate card size based on available space
+  const getCardSize = () => {
+    const baseSize = isMobile ? 85 : 120;
+    // Adjust size based on number of projects per row
+    const columns = isMobile ? (filteredProjects.length <= 1 ? 1 : 2) : 3;
+    return {
+      maxWidth: `${baseSize}px`,
+      minWidth: `${isMobile ? 70 : 100}px`,
+      width: '100%'
+    };
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="glass-card border-accent/50 max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
@@ -294,10 +305,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                       key={project.id} 
                       className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center" 
                       style={{ 
-                        aspectRatio: '1/1', 
-                        width: '100%', 
-                        maxWidth: isMobile ? '120px' : '150px',
-                        minWidth: isMobile ? '80px' : '120px',
+                        aspectRatio: '1/1',
+                        ...getCardSize(),
                         margin: '0 auto'
                       }}
                     >
@@ -316,30 +325,32 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                       </div>
                       <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
                       
-                      <div className="mt-1 flex flex-col items-center gap-1 w-full">
-                        {displayOptions.investment && (
-                          <div className="text-xs text-white/90 truncate w-full text-center">
-                            Investment: ${formatCompactNumber(project.investedAmount || 0)}
-                          </div>
-                        )}
-                        {displayOptions.earning && (
-                          <div className="text-xs text-white/90 truncate w-full text-center">
-                            Earned: ${formatCompactNumber(project.earnedAmount || 0)}
-                          </div>
-                        )}
-                        {displayOptions.expected && (
-                          <div className="text-xs text-white/90 truncate w-full text-center">
-                            Expected: ${formatCompactNumber(project.expectedAmount || 0)}
-                          </div>
-                        )}
-                        {displayOptions.stats && project.stats && project.stats.length > 0 && (
-                          project.stats.map((stat, index) => (
-                            <div key={index} className="text-xs text-white/90 truncate w-full text-center">
-                              {stat.type}: {formatCompactNumber(stat.amount)}
+                      <ScrollArea className="mt-1 w-full" style={{ maxHeight: isMobile ? '40px' : '60px' }}>
+                        <div className="flex flex-col items-center gap-1 w-full">
+                          {displayOptions.investment && (
+                            <div className="text-xs text-white/90 truncate w-full text-center">
+                              Investment: ${formatCompactNumber(project.investedAmount || 0)}
                             </div>
-                          ))
-                        )}
-                      </div>
+                          )}
+                          {displayOptions.earning && (
+                            <div className="text-xs text-white/90 truncate w-full text-center">
+                              Earned: ${formatCompactNumber(project.earnedAmount || 0)}
+                            </div>
+                          )}
+                          {displayOptions.expected && (
+                            <div className="text-xs text-white/90 truncate w-full text-center">
+                              Expected: ${formatCompactNumber(project.expectedAmount || 0)}
+                            </div>
+                          )}
+                          {displayOptions.stats && project.stats && project.stats.length > 0 && (
+                            project.stats.map((stat, index) => (
+                              <div key={index} className="text-xs text-white/90 truncate w-full text-center">
+                                {stat.type}: {formatCompactNumber(stat.amount)}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </ScrollArea>
                     </div>
                   ))}
                 </div>
