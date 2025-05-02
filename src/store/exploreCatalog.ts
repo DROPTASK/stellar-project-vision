@@ -102,16 +102,7 @@ const exploreCatalog: ExploreProject[] = [
     tge: "TBA",
     description: "3DOS is a blockchain-based platform that connects global manufacturing capacity, enabling decentralized production and rewarding contributors with 3DOS tokens."
   },
-    {
-    id: uuidv4(),
-    name: "InferiumAI",
-    logo: "https://pbs.twimg.com/profile_images/1783760880230072320/nj1zjrw1.jpg",
-    tags: ["hot","huge","latest"],
-    funding: "No Data",
-    reward: "POTENTIAL",
-    tge: "TBA",
-    description: "No detailed data available yet"
-  },
+    
   {
     id: uuidv4(),
     name: "GiveRep",
@@ -513,7 +504,6 @@ const exploreCatalog: ExploreProject[] = [
     tge: "TBA",
     description: "No detailed data available yet"
   },
-
 ];
 
 export default exploreCatalog;
