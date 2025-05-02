@@ -23,18 +23,18 @@ const Explore: React.FC = () => {
     const processed = {...project};
     
     // Add emojis to funding information if it exists
-    if (processed.info?.funding) {
-      processed.info.funding = `💵 ${processed.info.funding}`;
+    if (processed.funding) {
+      processed.funding = `💵 ${processed.funding}`;
     }
     
     // Add emojis to reward information if it exists
-    if (processed.info?.reward) {
-      processed.info.reward = `👌 ${processed.info.reward}`;
+    if (processed.reward) {
+      processed.reward = `👌 ${processed.reward}`;
     }
     
     // Add emojis to TGE information if it exists
-    if (processed.info?.tge) {
-      processed.info.tge = `🗓 ${processed.info.tge}`;
+    if (processed.tge) {
+      processed.tge = `🗓 ${processed.tge}`;
     }
     
     return processed;
