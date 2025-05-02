@@ -5,7 +5,7 @@ interface MetricCardProps {
   title: string;
   value: string | number;
   icon: React.ReactNode;
-  valuePrefix?: string; // Add the optional valuePrefix property
+  valuePrefix?: string;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, valuePrefix = '$' }) => {

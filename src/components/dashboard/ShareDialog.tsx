@@ -38,7 +38,11 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const projectsPerPage = 9; // 3×3 grid
+  const projectsPerPage = isMobile ? 8 : 9; // Show 8 on mobile, 3×3 grid on desktop
+  
+  // Dropdown state to prevent auto-closing
+  const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
+  const [optionsDropdownOpen, setOptionsDropdownOpen] = useState(false);
   
   // Initialize selected projects when dialog opens
   React.useEffect(() => {
@@ -56,6 +60,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
         return [...prev, projectId];
       }
     });
+    // Don't close dropdown when toggling selection
+    return false;
   };
   
   const toggleDisplayOption = (option: keyof DisplayOptions) => {
@@ -184,7 +190,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
       text += "\n";
     });
     
-    text += "Hey! Have a look on my projects and to generate your join @DropDeck1_bot!!";
+    text += "Hey! Have a look on my projects and to generate your same join @DropDeck1_bot!!";
     
     return text;
   };
@@ -195,6 +201,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
       .then(() => toast.success('Text copied to clipboard'))
       .catch(() => toast.error('Failed to copy text'));
   };
+
+  // Define responsive grid columns based on screen size
+  const getGridColumns = () => {
+    if (isMobile) {
+      return filteredProjects.length === 1 ? 'grid-cols-1' : 
+             filteredProjects.length <= 2 ? 'grid-cols-2' : 
+             'grid-cols-2 sm:grid-cols-3';
+    }
+    return 'grid-cols-3';
+  };
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -204,7 +220,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
         </DialogHeader>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          <DropdownMenu>
+          <DropdownMenu open={optionsDropdownOpen} onOpenChange={setOptionsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">Display Options</Button>
             </DropdownMenuTrigger>
@@ -238,11 +254,11 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <DropdownMenu>
+          <DropdownMenu open={projectsDropdownOpen} onOpenChange={setProjectsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">Select Projects</Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="max-h-60 overflow-auto">
+            <DropdownMenuContent className="max-h-60">
               <ScrollArea className="h-60 pr-4">
                 <DropdownMenuLabel>Choose Projects</DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -250,7 +266,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                   <DropdownMenuCheckboxItem 
                     key={project.id}
                     checked={selectedProjects.includes(project.id)}
-                    onCheckedChange={() => toggleProjectSelection(project.id)}
+                    onSelect={(e) => {
+                      e.preventDefault(); // Prevent default to avoid closing
+                      toggleProjectSelection(project.id);
+                    }}
                   >
                     {project.name}
                   </DropdownMenuCheckboxItem>
@@ -269,9 +288,19 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
               <h2 className="text-xl font-display text-white text-center mb-4">My Projects</h2>
               
               {currentProjects.length > 0 ? (
-                <div className="grid grid-cols-3 gap-3">
+                <div className={`grid ${getGridColumns()} gap-3`}>
                   {currentProjects.map(project => (
-                    <div key={project.id} className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center w-full" style={{ aspectRatio: '1/1', maxWidth: '100%' }}>
+                    <div 
+                      key={project.id} 
+                      className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center" 
+                      style={{ 
+                        aspectRatio: '1/1', 
+                        width: '100%', 
+                        maxWidth: isMobile ? '120px' : '150px',
+                        minWidth: isMobile ? '80px' : '120px',
+                        margin: '0 auto'
+                      }}
+                    >
                       <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
                         {project.logo ? (
                           <img 
