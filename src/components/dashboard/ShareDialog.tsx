@@ -4,13 +4,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAppStore } from '../../store/appStore';
 import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
-import { Share, Download, Copy } from 'lucide-react';
+import { Download, Copy, Grid, Table as TableIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { formatCompactNumber } from '../../lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ interface DisplayOptions {
 }
 
 const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
-  const { projects } = useAppStore();
+  const { projects, currentProfile } = useAppStore();
   const imageRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
@@ -35,6 +36,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     expected: true,
     stats: true,
   });
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -124,61 +126,23 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
       }
     }
   };
-  
-  const handleShare = async () => {
-    if (imageRef.current) {
-      try {
-        const dataUrl = await toPng(imageRef.current, { 
-          quality: 0.95,
-          height: imageRef.current.scrollHeight,
-          width: imageRef.current.scrollWidth,
-          canvasHeight: imageRef.current.scrollHeight,
-          canvasWidth: imageRef.current.scrollWidth,
-          pixelRatio: 2,
-          cacheBust: true,
-          skipAutoScale: true,
-          style: {
-            backgroundColor: 'transparent',
-          }
-        });
-        
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], 'my-crypto-projects.png', { type: 'image/png' });
-        
-        if (navigator.share) {
-          await navigator.share({
-            files: [file],
-            title: 'My Crypto Projects',
-            text: 'Hey! Have a look on my projects and to generate your same join @DropDeck1_bot!!'
-          });
-        } else {
-          toast.error('Sharing not supported on this browser');
-          // Fallback to download
-          handleDownload();
-        }
-      } catch (error) {
-        console.error('Error sharing:', error);
-        toast.error('Failed to share image');
-      }
-    }
-  };
 
   const generateCopyText = () => {
-    let text = "**My Projects**\n\n";
+    let text = `**${currentProfile?.name || "My"} Projects**\n\n`;
     
     filteredProjects.forEach(project => {
       text += `○ **${project.name}**\n`;
       
       if (displayOptions.investment) {
-        text += `- *Investment: $${formatCompactNumber(project.investedAmount || 0)}*\n`;
+        text += `- *Inv: $${formatCompactNumber(project.investedAmount || 0)}*\n`;
       }
       
       if (displayOptions.earning) {
-        text += `- *Earned: $${formatCompactNumber(project.earnedAmount || 0)}*\n`;
+        text += `- *Earn: $${formatCompactNumber(project.earnedAmount || 0)}*\n`;
       }
       
       if (displayOptions.expected) {
-        text += `- *Expected: $${formatCompactNumber(project.expectedAmount || 0)}*\n`;
+        text += `- *Exp: $${formatCompactNumber(project.expectedAmount || 0)}*\n`;
       }
       
       if (displayOptions.stats && project.stats && project.stats.length > 0) {
@@ -216,7 +180,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="glass-card border-accent/50 max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="font-display">Share My Projects</DialogTitle>
+          <DialogTitle className="font-display">
+            {currentProfile?.name ? `${currentProfile.name}'s` : 'My'} Projects
+          </DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-wrap gap-2 mb-4">
@@ -231,19 +197,19 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                 checked={displayOptions.investment}
                 onCheckedChange={() => toggleDisplayOption('investment')}
               >
-                Investment
+                Inv ($)
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem 
                 checked={displayOptions.earning}
                 onCheckedChange={() => toggleDisplayOption('earning')}
               >
-                Earning
+                Earn ($)
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem 
                 checked={displayOptions.expected}
                 onCheckedChange={() => toggleDisplayOption('expected')}
               >
-                Expected
+                Exp ($)
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem 
                 checked={displayOptions.stats}
@@ -277,6 +243,17 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
               </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+          >
+            {viewMode === 'grid' ? 
+              <><TableIcon className="h-4 w-4 mr-1" /> Table View</> : 
+              <><Grid className="h-4 w-4 mr-1" /> Grid View</>
+            }
+          </Button>
         </div>
         
         <div className="flex-1 overflow-hidden">
@@ -285,64 +262,129 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
               ref={imageRef} 
               className="w-full p-4 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-lg"
             >
-              <h2 className="text-xl font-display text-white text-center mb-4">My Projects</h2>
+              <h2 className="text-xl font-display text-white text-center mb-4">
+                {currentProfile?.name ? `${currentProfile.name}'s` : 'My'} Projects
+              </h2>
               
               {currentProjects.length > 0 ? (
-                <div className={`grid ${getGridColumns()} gap-3`}>
-                  {currentProjects.map(project => (
-                    <div 
-                      key={project.id} 
-                      className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center" 
-                      style={{ 
-                        aspectRatio: '1/1', 
-                        width: '100%', 
-                        maxWidth: isMobile ? '120px' : '150px',
-                        minWidth: isMobile ? '80px' : '120px',
-                        margin: '0 auto'
-                      }}
-                    >
-                      <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
-                        {project.logo ? (
-                          <img 
-                            src={project.logo} 
-                            alt={`${project.name} logo`}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-indigo-700">
-                            {project.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
-                      
-                      <div className="mt-1 flex flex-col items-center gap-1 w-full">
-                        {displayOptions.investment && (
-                          <div className="text-xs text-white/90 truncate w-full text-center">
-                            Investment: ${formatCompactNumber(project.investedAmount || 0)}
-                          </div>
-                        )}
-                        {displayOptions.earning && (
-                          <div className="text-xs text-white/90 truncate w-full text-center">
-                            Earned: ${formatCompactNumber(project.earnedAmount || 0)}
-                          </div>
-                        )}
-                        {displayOptions.expected && (
-                          <div className="text-xs text-white/90 truncate w-full text-center">
-                            Expected: ${formatCompactNumber(project.expectedAmount || 0)}
-                          </div>
-                        )}
-                        {displayOptions.stats && project.stats && project.stats.length > 0 && (
-                          project.stats.map((stat, index) => (
-                            <div key={index} className="text-xs text-white/90 truncate w-full text-center">
-                              {stat.type}: {formatCompactNumber(stat.amount)}
+                viewMode === 'grid' ? (
+                  <div className={`grid ${getGridColumns()} gap-3`}>
+                    {currentProjects.map(project => (
+                      <div 
+                        key={project.id} 
+                        className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center" 
+                        style={{ width: '100%', minHeight: isMobile ? '120px' : '150px' }}
+                      >
+                        <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0" 
+                             style={{ maxHeight: '60px' }}>
+                          {project.logo ? (
+                            <img 
+                              src={project.logo} 
+                              alt={`${project.name} logo`}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-indigo-700">
+                              {project.name.charAt(0)}
                             </div>
-                          ))
-                        )}
+                          )}
+                        </div>
+                        <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
+                        
+                        <div className="mt-1 flex flex-col items-center gap-1 w-full">
+                          {displayOptions.investment && (
+                            <div className="text-xs text-white/90 truncate w-full text-center">
+                              Inv: ${formatCompactNumber(project.investedAmount || 0)}
+                            </div>
+                          )}
+                          {displayOptions.earning && (
+                            <div className="text-xs text-white/90 truncate w-full text-center">
+                              Earn: ${formatCompactNumber(project.earnedAmount || 0)}
+                            </div>
+                          )}
+                          {displayOptions.expected && (
+                            <div className="text-xs text-white/90 truncate w-full text-center">
+                              Exp: ${formatCompactNumber(project.expectedAmount || 0)}
+                            </div>
+                          )}
+                          {displayOptions.stats && project.stats && project.stats.length > 0 && (
+                            project.stats.map((stat, index) => (
+                              <div key={index} className="text-xs text-white/90 truncate w-full text-center">
+                                {stat.type}: {formatCompactNumber(stat.amount)}
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table className="w-full">
+                      <TableHeader>
+                        <TableRow className="bg-black/30">
+                          <TableHead>Project</TableHead>
+                          {displayOptions.investment && <TableHead>Inv ($)</TableHead>}
+                          {displayOptions.earning && <TableHead>Earn ($)</TableHead>}
+                          {displayOptions.expected && <TableHead>Exp ($)</TableHead>}
+                          {displayOptions.stats && <TableHead>Stats</TableHead>}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {currentProjects.map(project => (
+                          <TableRow key={project.id} className="bg-black/20 hover:bg-black/40">
+                            <TableCell className="font-medium text-white">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded overflow-hidden bg-muted/30 flex-shrink-0">
+                                  {project.logo ? (
+                                    <img 
+                                      src={project.logo} 
+                                      alt={`${project.name} logo`}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-indigo-700 text-xs">
+                                      {project.name.charAt(0)}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="text-sm truncate">{project.name}</span>
+                              </div>
+                            </TableCell>
+                            {displayOptions.investment && (
+                              <TableCell className="text-white/90 text-sm">
+                                ${formatCompactNumber(project.investedAmount || 0)}
+                              </TableCell>
+                            )}
+                            {displayOptions.earning && (
+                              <TableCell className="text-white/90 text-sm">
+                                ${formatCompactNumber(project.earnedAmount || 0)}
+                              </TableCell>
+                            )}
+                            {displayOptions.expected && (
+                              <TableCell className="text-white/90 text-sm">
+                                ${formatCompactNumber(project.expectedAmount || 0)}
+                              </TableCell>
+                            )}
+                            {displayOptions.stats && (
+                              <TableCell className="text-white/90 text-sm">
+                                {project.stats && project.stats.length > 0 ? (
+                                  project.stats.map((stat, index) => (
+                                    <div key={index}>
+                                      {stat.type}: {formatCompactNumber(stat.amount)}
+                                    </div>
+                                  ))
+                                ) : (
+                                  "N/A"
+                                )}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )
               ) : (
                 <p className="text-white text-center">No projects selected</p>
               )}
@@ -383,13 +425,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             <Copy className="mr-2 h-4 w-4" />
             Copy Text
           </Button>
-          <Button onClick={handleDownload} className="flex-1">
+          <Button onClick={handleDownload} className="flex-1 btn-gradient">
             <Download className="mr-2 h-4 w-4" />
             Download
-          </Button>
-          <Button onClick={handleShare} className="flex-1 btn-gradient">
-            <Share className="mr-2 h-4 w-4" />
-            Share
           </Button>
         </div>
       </DialogContent>
