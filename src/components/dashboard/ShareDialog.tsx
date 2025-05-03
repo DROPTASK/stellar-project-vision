@@ -4,13 +4,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAppStore } from '../../store/appStore';
 import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
-import { Download, Copy, Table, ScrollText } from 'lucide-react';
+import { Download, Copy, Table, ScrollText, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { formatCompactNumber } from '../../lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { Table as UITable, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { generatePDF } from '../../lib/pdfUtils';
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -38,6 +39,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   
   // View state (grid or table)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  
+  // Theme state
+  const [theme, setTheme] = useState<'dark' | 'bright'>('dark');
   
   // Dropdown state to prevent auto-closing
   const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
@@ -115,10 +119,46 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   const getGridColumns = () => {
     if (isMobile) {
       return filteredProjects.length === 1 ? 'grid-cols-1' : 
-             filteredProjects.length <= 2 ? 'grid-cols-2' : 
-             'grid-cols-2 sm:grid-cols-3';
+             filteredProjects.length <= 4 ? 'grid-cols-2' : 
+             'grid-cols-3';
     }
-    return 'grid-cols-3';
+    return filteredProjects.length <= 4 ? 'grid-cols-2' : 
+           filteredProjects.length <= 8 ? 'grid-cols-3' : 
+           'grid-cols-4';
+  };
+
+  // Get background based on theme
+  const getBackground = () => {
+    if (theme === 'dark') {
+      return 'bg-gradient-to-b from-indigo-900 to-purple-900';
+    } else {
+      return 'bg-gradient-to-b from-blue-100 to-white';
+    }
+  };
+
+  // Get text color based on theme
+  const getTextColor = () => {
+    return theme === 'dark' ? 'text-white' : 'text-gray-800';
+  };
+
+  // Get backdrop color based on theme
+  const getBackdropColor = () => {
+    return theme === 'dark' ? 'bg-black/30' : 'bg-white/60';
+  };
+
+  // Download as PDF
+  const handleDownloadPDF = async () => {
+    try {
+      const success = await generatePDF(imageRef, `my-projects-${viewMode}.pdf`);
+      if (success) {
+        toast.success('PDF downloaded successfully');
+      } else {
+        toast.error('Failed to generate PDF');
+      }
+    } catch (error) {
+      toast.error('Failed to generate PDF');
+      console.error(error);
+    }
   };
   
   return (
@@ -204,32 +244,39 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
               </>
             )}
           </Button>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setTheme(theme === 'dark' ? 'bright' : 'dark')}
+          >
+            {theme === 'dark' ? 'Bright Theme' : 'Dark Theme'}
+          </Button>
         </div>
         
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-4">
             <div 
               ref={imageRef} 
-              className="w-full p-4 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-lg"
+              className={`w-full p-4 rounded-lg ${getBackground()}`}
             >
-              <h2 className="text-xl font-display text-white text-center mb-4">My Projects</h2>
+              <h2 className={`text-xl font-display ${getTextColor()} text-center mb-4`}>My Projects</h2>
               
               {filteredProjects.length > 0 ? (
                 viewMode === 'grid' ? (
-                  <div className={`grid ${getGridColumns()} gap-3`}>
+                  <div className={`grid ${getGridColumns()} gap-2`}>
                     {filteredProjects.map(project => (
                       <div 
                         key={project.id} 
-                        className="bg-black/30 backdrop-blur-sm p-3 rounded-lg flex flex-col items-center" 
+                        className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-lg flex flex-col items-center`} 
                         style={{ 
-                          aspectRatio: '1/1', 
                           width: '100%', 
-                          maxWidth: isMobile ? '120px' : '150px',
-                          minWidth: isMobile ? '80px' : '120px',
+                          maxWidth: isMobile ? '90px' : '120px',
+                          minWidth: isMobile ? '60px' : '80px',
                           margin: '0 auto'
                         }}
                       >
-                        <div className="w-full aspect-square mb-2 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
+                        <div className="w-full aspect-square mb-1 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
                           {project.logo ? (
                             <img 
                               src={project.logo} 
@@ -242,27 +289,27 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                             </div>
                           )}
                         </div>
-                        <h3 className="font-medium text-white text-sm text-center truncate w-full">{project.name}</h3>
+                        <h3 className={`font-medium text-xs ${getTextColor()} text-center truncate w-full`}>{project.name}</h3>
                         
-                        <div className="mt-1 flex flex-col items-center gap-1 w-full">
+                        <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
                           {displayOptions.investment && (
-                            <div className="text-xs text-white/90 truncate w-full text-center">
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
                               Inv.: ${formatCompactNumber(project.investedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.earning && (
-                            <div className="text-xs text-white/90 truncate w-full text-center">
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
                               Earn.: ${formatCompactNumber(project.earnedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.expected && (
-                            <div className="text-xs text-white/90 truncate w-full text-center">
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
                               Exp.: ${formatCompactNumber(project.expectedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.stats && project.stats && project.stats.length > 0 && (
                             project.stats.map((stat, index) => (
-                              <div key={index} className="text-xs text-white/90 truncate w-full text-center">
+                              <div key={index} className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
                                 {stat.type}: {formatCompactNumber(stat.amount)}
                               </div>
                             ))
@@ -272,21 +319,21 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                     ))}
                   </div>
                 ) : (
-                  <UITable className="border border-white/10 rounded-md overflow-hidden">
-                    <TableHeader className="bg-black/30">
+                  <UITable className={`border ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'} rounded-md overflow-hidden`}>
+                    <TableHeader className={theme === 'dark' ? 'bg-black/30' : 'bg-gray-100'}>
                       <TableRow>
-                        <TableHead className="text-white w-[180px]">Project</TableHead>
-                        {displayOptions.investment && <TableHead className="text-white text-right">Inv. ($)</TableHead>}
-                        {displayOptions.earning && <TableHead className="text-white text-right">Earn. ($)</TableHead>}
-                        {displayOptions.expected && <TableHead className="text-white text-right">Exp. ($)</TableHead>}
-                        {displayOptions.stats && <TableHead className="text-white text-right">Stats</TableHead>}
+                        <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '150px' }}>Project</TableHead>
+                        {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv. ($)</TableHead>}
+                        {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn. ($)</TableHead>}
+                        {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp. ($)</TableHead>}
+                        {displayOptions.stats && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Stats</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredProjects.map(project => (
-                        <TableRow key={project.id} className="border-white/10">
+                        <TableRow key={project.id} className={theme === 'dark' ? 'border-white/10' : 'border-gray-200'}>
                           <TableCell className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-md overflow-hidden bg-muted/30">
+                            <div className="w-6 h-6 rounded-md overflow-hidden bg-muted/30">
                               {project.logo ? (
                                 <img 
                                   src={project.logo} 
@@ -294,34 +341,34 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                                   className="object-cover w-full h-full"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-indigo-700 text-white">
+                                <div className="w-full h-full flex items-center justify-center bg-indigo-700 text-white text-xs">
                                   {project.name.charAt(0)}
                                 </div>
                               )}
                             </div>
-                            <span className="text-white font-medium">{project.name}</span>
+                            <span className={theme === 'dark' ? 'text-white font-medium text-sm' : 'text-gray-800 font-medium text-sm'}>{project.name}</span>
                           </TableCell>
                           
                           {displayOptions.investment && (
-                            <TableCell className="text-white/90 text-right">
+                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
                               {formatCompactNumber(project.investedAmount || 0)}
                             </TableCell>
                           )}
                           
                           {displayOptions.earning && (
-                            <TableCell className="text-white/90 text-right">
+                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
                               {formatCompactNumber(project.earnedAmount || 0)}
                             </TableCell>
                           )}
                           
                           {displayOptions.expected && (
-                            <TableCell className="text-white/90 text-right">
+                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
                               {formatCompactNumber(project.expectedAmount || 0)}
                             </TableCell>
                           )}
                           
                           {displayOptions.stats && (
-                            <TableCell className="text-white/90 text-right">
+                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
                               {project.stats && project.stats.length > 0 ? (
                                 <div className="flex flex-col items-end">
                                   {project.stats.map((stat, idx) => (
@@ -341,10 +388,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                   </UITable>
                 )
               ) : (
-                <p className="text-white text-center">No projects selected</p>
+                <p className={getTextColor() + " text-center"}>No projects selected</p>
               )}
               
-              <div className="text-white text-xs text-center mt-4">
+              <div className={`${getTextColor()} text-xs text-center mt-4`}>
                 Hey! Have a look on my projects and to generate your same join @DropDeck1_bot!!
               </div>
             </div>
@@ -355,6 +402,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
           <Button onClick={handleCopyText} className="flex-1">
             <Copy className="mr-2 h-4 w-4" />
             Copy Text
+          </Button>
+          <Button onClick={handleDownloadPDF} className="flex-1">
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Download PDF
           </Button>
         </div>
       </DialogContent>
