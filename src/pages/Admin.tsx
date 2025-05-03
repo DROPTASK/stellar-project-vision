@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Plus, TrashIcon, Save, Loader2, ImageIcon } from 'lucide-react';
+import { Edit, Plus, TrashIcon, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   Dialog, 
@@ -17,12 +17,13 @@ import {
 } from '@/components/ui/dialog';
 import { ExploreProject } from '../types';
 import { useNavigate } from 'react-router-dom';
-import { Switch } from '@/components/ui/switch';
+import exploreCatalog from '../store/exploreCatalog';
+import { v4 as uuidv4 } from 'uuid';
 
 interface FormData {
   name: string;
   description: string;
-  logo?: string;
+  logo: string;
   funding?: string;
   reward?: string;
   tge?: string;
@@ -73,11 +74,9 @@ const Admin: React.FC = () => {
       
       // Simulate API call with a timeout
       setTimeout(() => {
-        // For now, we'll use the data from the store or static data
-        import('../store/exploreCatalog').then(module => {
-          setProjects(module.exploreProjects);
-          setIsLoading(false);
-        });
+        // Use the imported data
+        setProjects(exploreCatalog);
+        setIsLoading(false);
       }, 1000);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -112,13 +111,13 @@ const Admin: React.FC = () => {
     setCurrentProject(project);
     setFormData({
       name: project.name,
-      description: project.description,
+      description: project.description || '',
       logo: project.logo,
-      funding: project.funding,
-      reward: project.reward,
-      tge: project.tge,
+      funding: project.funding || '',
+      reward: project.reward || '',
+      tge: project.tge || '',
       tags: [...project.tags],
-      url: project.url,
+      url: project.url || '',
     });
     setIsEditing(true);
   };
@@ -176,15 +175,22 @@ const Admin: React.FC = () => {
       if (currentProject) {
         // Update existing project
         const updatedProjects = projects.map(p => 
-          p.id === currentProject.id ? { ...currentProject, ...formData } : p
+          p.id === currentProject.id ? { ...currentProject, ...formData, logo: formData.logo || '' } : p
         );
         setProjects(updatedProjects);
         toast.success(`${formData.name} updated successfully`);
       } else {
         // Create new project
         const newProject: ExploreProject = {
-          id: Date.now().toString(),
-          ...formData,
+          id: uuidv4(),
+          name: formData.name,
+          description: formData.description,
+          logo: formData.logo || '', // Ensure logo is never empty
+          tags: formData.tags,
+          funding: formData.funding,
+          reward: formData.reward,
+          tge: formData.tge,
+          url: formData.url,
         };
         setProjects([...projects, newProject]);
         toast.success(`${formData.name} created successfully`);
@@ -365,7 +371,7 @@ const Admin: React.FC = () => {
                   <Input
                     id="logo"
                     name="logo"
-                    value={formData.logo || ''}
+                    value={formData.logo}
                     onChange={handleInputChange}
                     placeholder="https://example.com/logo.png"
                   />

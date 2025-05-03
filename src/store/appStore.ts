@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { projects as demoProjects } from './projectData';
-import { exploreProjects as demoCatalog } from './exploreCatalog';
+import exploreCatalog from './exploreCatalog';
 import { Project, Transaction, TodoItem, ExploreProject } from '../types';
 
 interface Profile {
@@ -57,7 +57,7 @@ export const useAppStore = create<AppState>()(
         projects: [...demoProjects],
         transactions: [],
         todoItems: [],
-        exploreProjects: [...demoCatalog],
+        exploreProjects: [...exploreCatalog],
         
         // Profile state
         profiles: [],
