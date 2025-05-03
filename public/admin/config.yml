@@ -1,37 +1,19 @@
-
 backend:
   name: github
   repo: DROPTASK/stellar-project-vision
   branch: main
-  auth_type: implicit
-  app_id: f48aea4e07724f51cdad
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
 
-# Add custom auth
-local_backend:
-  url: http://localhost:8081/api/v1
-
-# Customize the CMS appearance
-publish_mode: editorial_workflow
-site_url: https://stellar-project-vision.netlify.app
-logo_url: https://stellar-project-vision.netlify.app/logo.png
-
 collections:
   - name: "projects"
-    label: "Explore Projects"
+    label: "Projects"
     folder: "content/projects"
     create: true
     slug: "{{slug}}"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Description", name: "description", widget: "text" }
-      - { label: "Image", name: "image", widget: "image", required: false }
-      - { label: "Funding", name: "funding", widget: "string", required: false }
-      - { label: "Reward", name: "reward", widget: "string", required: false }
-      - { label: "TGE", name: "tge", widget: "string", required: false }
-      - { label: "URL", name: "url", widget: "string", required: false }
-      - { label: "Tags", name: "tags", widget: "list", required: false }
-      - { label: "Published", name: "published", widget: "boolean", default: true }
-
+      - { label: "Image", name: "image", widget: "image" }
+      - { label: "Link", name: "link", widget: "string" }

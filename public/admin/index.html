@@ -1,179 +1,21 @@
-
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crypto Projects Admin</title>
+    <title>Admin Panel</title>
     <script src="https://unpkg.com/netlify-cms@^2.10.0/dist/netlify-cms.js"></script>
-    <script src="https://unpkg.com/netlify-identity-widget@^1.0.0/build/netlify-identity-widget.js"></script>
-    <style>
-      /* Custom styles to match the app theme */
-      :root {
-        --primary-color: #9b87f5;
-        --secondary-color: #7E69AB;
-        --background-color: #0F0F1A;
-        --text-color: #FFFFFF;
-        --accent-color: #1EAEDB;
-      }
-      
-      body {
-        background: linear-gradient(to bottom, #0F0F1A, #1A1034);
-        color: var(--text-color);
-        font-family: 'Orbitron', sans-serif;
-      }
-      
-      /* Override CMS styles when they load */
-      #nc-root {
-        background-color: transparent !important;
-      }
-      
-      /* Login page styling */
-      #login-container {
-        height: 100vh;
-        width: 100vw;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(to bottom, #0F0F1A, #1A1034);
-      }
-      
-      .login-box {
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        border: 1px solid rgba(124, 58, 237, 0.2);
-        padding: 2rem;
-        box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
-        text-align: center;
-        max-width: 400px;
-        width: 100%;
-      }
-      
-      .login-title {
-        color: var(--text-color);
-        margin-bottom: 2rem;
-        font-weight: bold;
-        font-size: 1.5rem;
-      }
-      
-      .login-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border-radius: 6px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
-        margin-bottom: 1rem;
-        color: var(--text-color);
-      }
-      
-      .login-button {
-        background: linear-gradient(to right, #4f46e5, #8b5cf6);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        width: 100%;
-        margin-top: 1rem;
-      }
-      
-      .login-button:hover {
-        background: linear-gradient(to right, #4338ca, #7c3aed);
-      }
-      
-      .login-logo {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 1rem;
-        background: linear-gradient(to right, #4f46e5, #8b5cf6);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-left: auto;
-        margin-right: auto;
-      }
-    </style>
   </head>
   <body>
-    <div id="login-container" style="display: none;">
-      <div class="login-box">
-        <div class="login-logo">CP</div>
-        <h1 class="login-title">Admin Access</h1>
-        <input type="password" id="password" placeholder="Enter admin password" class="login-input" />
-        <button id="login-button" class="login-button">Access CMS</button>
-      </div>
-    </div>
-    
     <script>
       window.CMS_MANUAL_INIT = true;
-      
-      // Display custom login first
-      document.addEventListener('DOMContentLoaded', function() {
-        const savedAccess = sessionStorage.getItem('adminAccess');
-        if (savedAccess === 'true') {
-          initCMS();
-        } else {
-          document.getElementById('login-container').style.display = 'flex';
-          document.getElementById('login-button').addEventListener('click', function() {
-            const password = document.getElementById('password').value;
-            if (password === '9084996719') {
-              sessionStorage.setItem('adminAccess', 'true');
-              document.getElementById('login-container').style.display = 'none';
-              initCMS();
-            } else {
-              alert('Incorrect password');
-            }
-          });
-        }
-      });
-      
-      function initCMS() {
-        fetch('/admin/config.yml')
-          .then(response => response.text())
-          .then(config => {
-            const yaml = window.jsyaml.load(config);
-            window.CMS.init({ config: yaml });
-            
-            // Add custom styles after CMS loads
-            setTimeout(() => {
-              const style = document.createElement('style');
-              style.textContent = `
-                .css-12b66la-AppHeaderContent {
-                  background-color: var(--background-color) !important;
-                }
-                .css-v758ki-AppMainContainer, .css-1gj57a0-SidebarContainer-card {
-                  background-color: rgba(15, 15, 26, 0.9) !important;
-                  backdrop-filter: blur(10px);
-                }
-                .css-1hvrgvd-CollectionTopContainer-card-cardTop {
-                  background-color: rgba(26, 16, 52, 0.8) !important;
-                }
-                .css-1f7nhiq-CollectionMain {
-                  background-color: rgba(15, 15, 26, 0.8) !important;
-                }
-                .css-wfd1u4-CollectionTopHeading {
-                  color: var(--text-color) !important;
-                }
-                .css-1ih1y1j-LibraryTitle {
-                  color: var(--text-color) !important;
-                }
-                .css-1j9p6nf-StyledDropdownButton-button-default-medium-gray {
-                  background-color: var(--primary-color) !important;
-                }
-                .css-1q8pseudo-AppHeaderNavLink-AppHeaderButton-button-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-AppHeaderNavLink-ShortcutIcon {
-                  color: var(--text-color) !important;
-                }
-              `;
-              document.head.appendChild(style);
-            }, 1000);
-          });
-      }
+    </script>
+    <script>
+      fetch('/admin/config.yml')
+        .then(response => response.text())
+        .then(config => {
+          const yaml = window.jsyaml.load(config);
+          window.CMS.init({ config: yaml });
+        });
     </script>
   </body>
 </html>

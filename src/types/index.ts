@@ -25,7 +25,6 @@ export interface ExploreProject {
   reward?: string;
   tge?: string;
   description?: string;
-  url?: string;
   hydraLink?: string;
 }
 
@@ -45,4 +44,11 @@ export interface TodoItem {
   text: string;
   completed: boolean;
   createdAt: string;
+}
+
+export interface AppState {
+  projects: Project[];
+  transactions: Transaction[];
+  exploreProjects: ExploreProject[];
+  todos: TodoItem[];
 }
