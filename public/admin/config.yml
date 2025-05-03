@@ -1,3 +1,4 @@
+
 backend:
   name: github
   repo: DROPTASK/stellar-project-vision
@@ -17,3 +18,39 @@ collections:
       - { label: "Description", name: "description", widget: "text" }
       - { label: "Image", name: "image", widget: "image" }
       - { label: "Link", name: "link", widget: "string" }
+  
+  - name: "explore_projects"
+    label: "Explore Projects"
+    folder: "content/explore-projects"
+    create: true
+    identifier_field: "name"
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "name", widget: "string" }
+      - { label: "Logo URL", name: "logo", widget: "string" }
+      - { label: "Tags (comma separated)", name: "taglist", widget: "string", required: false }
+      - { label: "Funding", name: "funding", widget: "string", required: false }
+      - { label: "Reward", name: "reward", widget: "string", required: false }
+      - { label: "TGE Status", name: "tge", widget: "string", required: false }
+      - { label: "Description", name: "description", widget: "text", required: false }
+      - { label: "Hydra Link", name: "hydraLink", widget: "string", required: false }
+      - label: "Featured Project"
+        name: "featured"
+        widget: "boolean"
+        default: false
+        required: false
+
+  - name: "app_settings"
+    label: "App Settings"
+    files:
+      - label: "Hydra Links"
+        name: "hydra_links"
+        file: "content/settings/hydra-links.json"
+        fields:
+          - label: "Links"
+            name: "links"
+            widget: "list"
+            fields:
+              - { label: "Project Name", name: "name", widget: "string" }
+              - { label: "URL", name: "url", widget: "string" }
+              - { label: "Focus Tag", name: "focus", widget: "string", required: false }
