@@ -26,6 +26,13 @@ interface AppState {
   currentProfile: Profile | null;
   isProfileModalOpen: boolean;
   
+  // Utility functions
+  getTotalInvestment: () => number;
+  getTotalEarning: () => number;
+  getExpectedReturn: () => number;
+  addProjectStat: (projectId: string, amount: number, type: string) => void;
+  addProjectFromExplore: (exploreProject: ExploreProject) => void;
+  
   // Actions for projects
   addProject: (project: Project) => void;
   updateProject: (project: Project) => void;
@@ -53,7 +60,7 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         projects: [...demoProjects],
         transactions: [],
         todoItems: [],
@@ -64,13 +71,80 @@ export const useAppStore = create<AppState>()(
         currentProfile: null,
         isProfileModalOpen: false,
         
+        // Utility functions
+        getTotalInvestment: () => {
+          return get().projects.reduce((total, project) => total + (project.investedAmount || 0), 0);
+        },
+        
+        getTotalEarning: () => {
+          return get().projects.reduce((total, project) => total + (project.earnedAmount || 0), 0);
+        },
+        
+        getExpectedReturn: () => {
+          return get().projects.reduce((total, project) => total + (project.expectedAmount || 0), 0);
+        },
+        
+        addProjectStat: (projectId, amount, type) => {
+          const projects = get().projects;
+          const projectIndex = projects.findIndex(p => p.id === projectId);
+          
+          if (projectIndex !== -1) {
+            const project = { ...projects[projectIndex] };
+            
+            // Initialize stats array if it doesn't exist
+            if (!project.stats) {
+              project.stats = [];
+            }
+            
+            // Add new stat
+            project.stats.push({ amount, type });
+            
+            // Update project amounts based on stat type
+            if (type === 'investment') {
+              project.investedAmount = (project.investedAmount || 0) + amount;
+            } else if (type === 'earning') {
+              project.earnedAmount = (project.earnedAmount || 0) + amount;
+            }
+            
+            // Update project in store
+            set({
+              projects: [
+                ...projects.slice(0, projectIndex),
+                project,
+                ...projects.slice(projectIndex + 1)
+              ]
+            });
+          }
+        },
+        
+        addProjectFromExplore: (exploreProject) => {
+          const newProject: Project = {
+            id: uuidv4(),
+            name: exploreProject.name,
+            logo: exploreProject.logo,
+            investedAmount: 0,
+            expectedAmount: 0,
+            earnedAmount: 0,
+            type: 'mainnet',
+            stats: []
+          };
+          
+          set((state) => ({
+            projects: [...state.projects, newProject]
+          }));
+          
+          return newProject.id;
+        },
+        
         // Project actions
         addProject: (project: Project) => set((state) => ({ 
           projects: [...state.projects, project] 
         })),
+        
         updateProject: (project: Project) => set((state) => ({ 
           projects: state.projects.map((p) => p.id === project.id ? project : p) 
         })),
+        
         removeProject: (id: string) => set((state) => ({ 
           projects: state.projects.filter((p) => p.id !== id) 
         })),
@@ -79,6 +153,7 @@ export const useAppStore = create<AppState>()(
         addTransaction: (transaction: Transaction) => set((state) => ({ 
           transactions: [...state.transactions, transaction] 
         })),
+        
         removeTransaction: (id: string) => set((state) => ({ 
           transactions: state.transactions.filter((t) => t.id !== id) 
         })),
@@ -87,9 +162,11 @@ export const useAppStore = create<AppState>()(
         addTodoItem: (item: TodoItem) => set((state) => ({ 
           todoItems: [...state.todoItems, item] 
         })),
+        
         updateTodoItem: (item: TodoItem) => set((state) => ({ 
           todoItems: state.todoItems.map((t) => t.id === item.id ? item : t) 
         })),
+        
         removeTodoItem: (id: string) => set((state) => ({ 
           todoItems: state.todoItems.filter((t) => t.id !== id) 
         })),

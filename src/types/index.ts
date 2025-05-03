@@ -46,10 +46,3 @@ export interface TodoItem {
   completed: boolean;
   createdAt: string;
 }
-
-export interface AppState {
-  projects: Project[];
-  transactions: Transaction[];
-  exploreProjects: ExploreProject[];
-  todos: TodoItem[];
-}
