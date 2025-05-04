@@ -11,6 +11,7 @@ import { PlusCircle, Edit, X, Trash2 } from 'lucide-react';
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTheme } from '../theme-provider';
 
 interface GridProjectCardProps {
   project: Project;
@@ -21,6 +22,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
   const [isAddStatsDialogOpen, setIsAddStatsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingStatIndex, setEditingStatIndex] = useState<number | null>(null);
+  const { theme } = useTheme();
   
   const statsForm = useForm({
     defaultValues: {
@@ -75,6 +77,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
     statsForm.setValue('amount', stat.amount);
     statsForm.setValue('type', stat.type);
     setEditingStatIndex(statIndex);
+    setIsAddStatsDialogOpen(true);
   };
   
   // Function to remove a stat
@@ -89,11 +92,15 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
     }
   };
 
+  const cardClass = theme === 'bright' 
+    ? 'bg-gradient-to-br from-anime-soft-blue/60 to-anime-soft-purple/40 p-4 flex flex-col rounded-2xl border border-anime-soft-purple/30 shadow-sm hover:shadow-md transition-all animate-fade-in'
+    : 'glass-card p-4 flex flex-col blue-glow transition-all';
+
   return (
-    <div className="glass-card p-4 flex flex-col blue-glow transition-all">
+    <div className={cardClass}>
       <h3 className="font-semibold text-base mb-3 truncate">{project.name}</h3>
       
-      <div className="w-full aspect-square mb-3 rounded-full overflow-hidden bg-muted flex-shrink-0"> {/* Changed to rounded-full for circular logo */}
+      <div className="w-full aspect-square mb-3 rounded-full overflow-hidden bg-muted flex-shrink-0"> 
         {project.logo ? (
           <img 
             src={project.logo} 
@@ -111,7 +118,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
         <div className="flex-1">
           <div className="flex flex-wrap gap-1 mb-3">
             {project.stats.map((stat, index) => (
-              <div key={index} className="bg-muted/30 text-xs px-2 py-0.5 rounded-full">
+              <div key={index} className={`${theme === 'bright' ? 'bg-anime-soft-blue/60' : 'bg-muted/30'} text-xs px-2 py-0.5 rounded-full`}>
                 {stat.amount} {stat.type}
               </div>
             ))}
@@ -126,12 +133,12 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
       <div className="flex flex-col gap-1 mt-2">
         <Dialog open={isAddStatsDialogOpen} onOpenChange={setIsAddStatsDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="w-full">
+            <Button size="sm" className={`w-full ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink' : ''}`}>
               <PlusCircle className="h-3 w-3 mr-1" />
               Add Stats
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-accent/50">
+          <DialogContent className={theme === 'bright' ? 'bg-white border-anime-soft-purple/50 rounded-xl' : 'glass-card border-accent/50'}>
             <DialogHeader>
               <DialogTitle className="font-display">
                 {editingStatIndex !== null ? 'Edit Stat' : 'Add Stats to'} {project.name}
@@ -151,7 +158,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                           <Input 
                             id="amount" 
                             type="number" 
-                            className="bg-muted/50"
+                            className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
                             step="any"
                             placeholder="98"
                             {...field}
@@ -172,7 +179,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                           <Input 
                             id="type" 
                             type="text" 
-                            className="bg-muted/50"
+                            className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
                             placeholder="days"
                             {...field}
                           />
@@ -188,7 +195,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                     <ScrollArea className="h-[120px] mt-2">
                       <div className="space-y-2">
                         {project.stats.map((stat, index) => (
-                          <div key={index} className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
+                          <div key={index} className={`flex items-center gap-2 p-2 ${theme === 'bright' ? 'bg-anime-soft-gray/30' : 'bg-muted/20'} rounded-lg`}>
                             <div className="flex-1">
                               <span className="text-sm font-medium">{stat.amount} {stat.type}</span>
                             </div>
@@ -215,7 +222,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                   </div>
                 )}
                 
-                <div className="bg-muted/30 p-2 rounded-lg text-xs text-muted-foreground">
+                <div className={`${theme === 'bright' ? 'bg-anime-soft-gray/30' : 'bg-muted/30'} p-2 rounded-lg text-xs text-muted-foreground`}>
                   <p className="font-medium mb-1">Examples:</p>
                   <ul className="space-y-1">
                     <li>• For Grass: amount 120, type days</li>
@@ -224,7 +231,10 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                   </ul>
                 </div>
                 
-                <Button type="submit" className="w-full btn-gradient">
+                <Button 
+                  type="submit" 
+                  className={`w-full ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink' : 'btn-gradient'}`}
+                >
                   {editingStatIndex !== null ? 'Update Stat' : 'Add Stat'}
                 </Button>
                 
@@ -248,12 +258,16 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
         
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={`w-full ${theme === 'bright' ? 'border-anime-soft-purple/30 text-anime-vivid-purple' : ''}`}
+            >
               <Edit className="h-3 w-3 mr-1" />
               Edit Stats
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-accent/50">
+          <DialogContent className={theme === 'bright' ? 'bg-white border-anime-soft-purple/50 rounded-xl' : 'glass-card border-accent/50'}>
             <DialogHeader>
               <DialogTitle className="font-display">Edit {project.name}</DialogTitle>
             </DialogHeader>
@@ -264,7 +278,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                 <Input 
                   id="investedAmount" 
                   type="number" 
-                  className="bg-muted/50"
+                  className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
                   step="any"
                   {...editForm.register('investedAmount')}
                 />
@@ -275,7 +289,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                 <Input 
                   id="expectedAmount" 
                   type="number" 
-                  className="bg-muted/50"
+                  className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
                   step="any"
                   {...editForm.register('expectedAmount')}
                 />
@@ -286,13 +300,18 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                 <Input 
                   id="earnedAmount" 
                   type="number" 
-                  className="bg-muted/50"
+                  className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
                   step="any"
                   {...editForm.register('earnedAmount')}
                 />
               </div>
               
-              <Button type="submit" className="w-full btn-gradient">Save Changes</Button>
+              <Button 
+                type="submit" 
+                className={`w-full ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink' : 'btn-gradient'}`}
+              >
+                Save Changes
+              </Button>
             </form>
           </DialogContent>
         </Dialog>

@@ -117,12 +117,12 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     return text;
   };
 
-  // Define responsive grid columns based on screen size
+  // Define responsive grid columns based on screen size - Updated to show minimum 3 in row
   const getGridColumns = () => {
     if (isMobile) {
       return filteredProjects.length === 1 ? 'grid-cols-1' : 'grid-cols-2';
     }
-    return filteredProjects.length <= 4 ? 'grid-cols-3' : 'grid-cols-4';
+    return filteredProjects.length <= 3 ? 'grid-cols-3' : 'grid-cols-4';
   };
 
   // Get background based on theme
@@ -144,59 +144,68 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     return theme === 'dark' ? 'bg-black/30' : 'bg-white/60';
   };
 
-  // Download as PDF - Enhanced for Telegram browser compatibility
+  // Download as PDF - Fixed for Telegram browser compatibility
   const handleDownloadPDF = async () => {
     try {
       // Adding a small delay to ensure all content is rendered
       setTimeout(async () => {
         if (imageRef.current) {
           try {
-            const success = await generatePDF(imageRef, `my-projects-${viewMode}.pdf`, {
-              margin: [20, 20, 20, 20], // Increased margins to prevent cutoff
-              enableLinks: false, // Disable links for better compatibility
-              filename: `my-projects-${viewMode}.pdf`,
-              image: { type: 'jpeg', quality: 0.95 }, // Use JPEG for better compatibility
-              html2canvas: { 
-                scale: 2, // Higher scale for better quality
-                useCORS: true,
-                logging: false,
-                allowTaint: true
-              }
+            // First try the image approach which works better in Telegram
+            const dataUrl = await toPng(imageRef.current, { 
+              cacheBust: true,
+              pixelRatio: 2,
+              backgroundColor: theme === 'dark' ? '#1a1b26' : '#ffffff',
+              width: imageRef.current.offsetWidth,
+              height: imageRef.current.offsetHeight,
             });
             
-            if (success) {
-              toast.success('PDF downloaded successfully');
-            } else {
-              // Alternative download method for Telegram browser
-              const dataUrl = await toPng(imageRef.current, { 
-                cacheBust: true,
-                pixelRatio: 2,
-                backgroundColor: theme === 'dark' ? '#1a1b26' : '#ffffff'
-              });
-              
-              const link = document.createElement('a');
-              link.download = `my-projects-${viewMode}.png`;
-              link.href = dataUrl;
-              link.click();
-              toast.success('Project image downloaded successfully');
-            }
+            const link = document.createElement('a');
+            link.download = `my-projects-${viewMode}.png`;
+            link.href = dataUrl;
+            link.click();
+            toast.success('Project image downloaded successfully');
           } catch (err) {
-            toast.error('Failed to generate image or PDF');
-            console.error(err);
+            // Fallback to PDF if image fails
+            try {
+              await generatePDF(imageRef, `my-projects-${viewMode}.pdf`, {
+                margin: [40, 40, 40, 40], // Increased margins to prevent cutoff
+                filename: `my-projects-${viewMode}.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { 
+                  scale: 2,
+                  useCORS: true,
+                  allowTaint: true
+                }
+              });
+              toast.success('PDF downloaded successfully');
+            } catch (pdfErr) {
+              toast.error('Failed to generate PDF or image');
+              console.error(pdfErr);
+            }
           }
         }
       }, 500);
     } catch (error) {
-      toast.error('Failed to generate PDF');
+      toast.error('Failed to generate image');
       console.error(error);
     }
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-accent/50 max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="border-accent/50 max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="font-display">Share My Projects</DialogTitle>
+          <Toggle
+            pressed={viewMode === 'table'}
+            onPressedChange={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+            size="sm"
+            aria-label={viewMode === 'grid' ? 'Switch to table view' : 'Switch to grid view'}
+            className="p-1 h-7 w-7"
+          >
+            {viewMode === 'grid' ? <Table className="h-4 w-4" /> : <ScrollText className="h-4 w-4" />}
+          </Toggle>
         </DialogHeader>
         
         <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
@@ -259,42 +268,33 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          
-          <Toggle
-            pressed={viewMode === 'table'}
-            onPressedChange={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-            size="sm"
-            aria-label={viewMode === 'grid' ? 'Switch to table view' : 'Switch to grid view'}
-            className="p-1 h-7 w-7"
-          >
-            {viewMode === 'grid' ? <Table className="h-4 w-4" /> : <ScrollText className="h-4 w-4" />}
-          </Toggle>
         </div>
         
         <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full pr-4">
+          <ScrollArea className="h-full w-full">
             <div 
               ref={imageRef} 
-              className={`w-full p-4 rounded-lg ${getBackground()}`}
+              className={`w-full p-4 rounded-xl ${getBackground()} min-h-[300px]`}
+              style={{ minWidth: "100%" }}
             >
               <h2 className={`text-xl font-display ${getTextColor()} text-center mb-4`}>My Projects</h2>
               
               {filteredProjects.length > 0 ? (
                 viewMode === 'grid' ? (
-                  <div className={`grid ${getGridColumns()} gap-2`}>
+                  <div className={`grid ${getGridColumns()} gap-2 pb-4`}>
                     {filteredProjects.map(project => (
                       <div 
                         key={project.id} 
-                        className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-lg flex flex-col items-center blue-glow`} 
+                        className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-xl flex flex-col items-center`} 
                         style={{ 
                           width: '100%', 
-                          maxWidth: isMobile ? '60px' : '70px', // Even smaller size
-                          minWidth: isMobile ? '45px' : '55px',
+                          maxWidth: '80px',
+                          minWidth: '60px',
                           margin: '0 auto'
                         }}
                       >
                         <div className="w-full aspect-square mb-1 rounded-full overflow-hidden bg-muted/30 flex-shrink-0"
-                             style={{ maxHeight: isMobile ? '35px' : '40px' }}> {/* Circular logo */}
+                             style={{ maxHeight: '45px' }}> {/* Circular logo */}
                           {project.logo ? (
                             <img 
                               src={project.logo} 
@@ -307,32 +307,33 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                             </div>
                           )}
                         </div>
-                        <h3 className={`font-medium text-xs ${getTextColor()} text-center truncate w-full`}
-                            style={{ fontSize: isMobile ? '7px' : '9px' }}>{project.name}</h3> {/* Smaller font */}
+                        <h3 className={`font-medium text-xs ${getTextColor()} text-center truncate w-full`}>
+                          {project.name}
+                        </h3>
                         
                         <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
                           {displayOptions.investment && (
                             <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                 style={{ fontSize: '7px' }}> {/* Smaller font */}
+                                 style={{ fontSize: '7px' }}>
                               Inv: ${formatCompactNumber(project.investedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.earning && (
                             <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                 style={{ fontSize: '7px' }}> {/* Smaller font */}
+                                 style={{ fontSize: '7px' }}>
                               Earn: ${formatCompactNumber(project.earnedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.expected && (
                             <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                 style={{ fontSize: '7px' }}> {/* Smaller font */}
+                                 style={{ fontSize: '7px' }}>
                               Exp: ${formatCompactNumber(project.expectedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.stats && project.stats && project.stats.length > 0 && (
                             project.stats.map((stat, index) => (
                               <div key={index} className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                   style={{ fontSize: '7px' }}> {/* Smaller font */}
+                                   style={{ fontSize: '7px' }}>
                                 {stat.type}: {formatCompactNumber(stat.amount)}
                               </div>
                             ))
@@ -346,9 +347,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                     <TableHeader className={theme === 'dark' ? 'bg-black/30' : 'bg-gray-100'}>
                       <TableRow>
                         <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '150px' }}>Project</TableHead>
-                        {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv ($)</TableHead>}
-                        {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn ($)</TableHead>}
-                        {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp ($)</TableHead>}
+                        {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv</TableHead>}
+                        {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn</TableHead>}
+                        {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp</TableHead>}
                         {displayOptions.stats && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Stats</TableHead>}
                       </TableRow>
                     </TableHeader>
@@ -428,7 +429,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
           </Button>
           <Button onClick={handleDownloadPDF} className="flex-1">
             <FileSpreadsheet className="mr-2 h-4 w-4" />
-            Download PDF
+            Download
           </Button>
         </div>
       </DialogContent>
