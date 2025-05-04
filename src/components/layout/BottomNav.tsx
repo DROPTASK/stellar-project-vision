@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from 'react-router-dom';
 import { Home, WalletCards, Compass, CheckSquare, HelpCircle } from 'lucide-react';
+import { useTheme } from '../theme-provider';
 
 const navItems = [
   { path: '/', icon: <Home size={18} />, text: 'Home' },
@@ -12,9 +13,10 @@ const navItems = [
 
 export default function BottomNav() {
   const location = useLocation();
+  const { theme } = useTheme();
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/30">
+    <nav className={`fixed bottom-0 left-0 right-0 z-50 ${theme === 'bright' ? 'bg-white/80 border-t border-primary/10' : 'backdrop-blur-xl bg-black/30'}`}>
       <div className="flex justify-around items-center p-2 shadow-lg">
         {navItems.map((item) => (
           <Link
@@ -22,8 +24,12 @@ export default function BottomNav() {
             to={item.path}
             className={`flex flex-col items-center justify-center px-1 py-1.5 rounded-md transition-all duration-200 ${
               location.pathname === item.path
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-primary'
+                ? theme === 'bright' 
+                  ? 'text-primary bg-primary/5' 
+                  : 'text-primary'
+                : theme === 'bright'
+                  ? 'text-gray-500 hover:text-primary hover:bg-primary/5'
+                  : 'text-muted-foreground hover:text-primary'
             }`}
           >
             <div className="flex flex-col items-center">
@@ -33,7 +39,7 @@ export default function BottomNav() {
           </Link>
         ))}
       </div>
-      <div className="h-safe-area-bottom bg-black/30" />
+      <div className={`h-safe-area-bottom ${theme === 'bright' ? 'bg-white/80' : 'bg-black/30'}`} />
     </nav>
   );
 }

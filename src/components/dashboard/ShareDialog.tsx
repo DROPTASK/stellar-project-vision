@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { Table as UITable, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { generatePDF } from '../../lib/pdfUtils';
 import { Toggle } from '../ui/toggle';
+import { useTheme } from '../theme-provider';
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -38,11 +39,11 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     stats: true,
   });
   
+  // Use global theme instead of local state
+  const { theme } = useTheme();
+  
   // View state (grid or table)
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-  
-  // Theme state
-  const [theme, setTheme] = useState<'dark' | 'bright'>('dark');
   
   // Dropdown state to prevent auto-closing
   const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
@@ -119,13 +120,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
   // Define responsive grid columns based on screen size
   const getGridColumns = () => {
     if (isMobile) {
-      return filteredProjects.length === 1 ? 'grid-cols-1' : 
-             filteredProjects.length <= 4 ? 'grid-cols-2' : 
-             'grid-cols-3';
+      return filteredProjects.length === 1 ? 'grid-cols-1' : 'grid-cols-2';
     }
-    return filteredProjects.length <= 4 ? 'grid-cols-2' : 
-           filteredProjects.length <= 9 ? 'grid-cols-3' : 
-           'grid-cols-4';
+    return filteredProjects.length <= 4 ? 'grid-cols-3' : 'grid-cols-4';
   };
 
   // Get background based on theme
@@ -152,25 +149,25 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     try {
       // Adding a small delay to ensure all content is rendered
       setTimeout(async () => {
-        const success = await generatePDF(imageRef, `my-projects-${viewMode}.pdf`, {
-          margin: [10, 10, 10, 10], // Add margins to prevent content cutoff
-          enableLinks: false, // Disable links for better compatibility
-          filename: `my-projects-${viewMode}.pdf`,
-          image: { type: 'jpeg', quality: 0.95 }, // Use JPEG for better compatibility
-          html2canvas: { 
-            scale: 2, // Higher scale for better quality
-            useCORS: true,
-            logging: false,
-            allowTaint: true
-          }
-        });
-        
-        if (success) {
-          toast.success('PDF downloaded successfully');
-        } else {
-          // Alternative download method for Telegram browser
+        if (imageRef.current) {
           try {
-            if (imageRef.current) {
+            const success = await generatePDF(imageRef, `my-projects-${viewMode}.pdf`, {
+              margin: [20, 20, 20, 20], // Increased margins to prevent cutoff
+              enableLinks: false, // Disable links for better compatibility
+              filename: `my-projects-${viewMode}.pdf`,
+              image: { type: 'jpeg', quality: 0.95 }, // Use JPEG for better compatibility
+              html2canvas: { 
+                scale: 2, // Higher scale for better quality
+                useCORS: true,
+                logging: false,
+                allowTaint: true
+              }
+            });
+            
+            if (success) {
+              toast.success('PDF downloaded successfully');
+            } else {
+              // Alternative download method for Telegram browser
               const dataUrl = await toPng(imageRef.current, { 
                 cacheBust: true,
                 pixelRatio: 2,
@@ -263,27 +260,15 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
             </DropdownMenu>
           </div>
           
-          <div className="flex items-center gap-1">
-            <Toggle
-              pressed={viewMode === 'table'}
-              onPressedChange={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-              size="sm"
-              aria-label={viewMode === 'grid' ? 'Switch to table view' : 'Switch to grid view'}
-              className="p-1 h-7"
-            >
-              {viewMode === 'grid' ? <Table className="h-4 w-4" /> : <ScrollText className="h-4 w-4" />}
-            </Toggle>
-            
-            <Toggle
-              pressed={theme === 'bright'}
-              onPressedChange={() => setTheme(theme === 'dark' ? 'bright' : 'dark')}
-              size="sm"
-              aria-label={theme === 'dark' ? 'Switch to bright theme' : 'Switch to dark theme'}
-              className="p-1 h-7"
-            >
-              {theme === 'dark' ? 'B' : 'D'}
-            </Toggle>
-          </div>
+          <Toggle
+            pressed={viewMode === 'table'}
+            onPressedChange={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+            size="sm"
+            aria-label={viewMode === 'grid' ? 'Switch to table view' : 'Switch to grid view'}
+            className="p-1 h-7 w-7"
+          >
+            {viewMode === 'grid' ? <Table className="h-4 w-4" /> : <ScrollText className="h-4 w-4" />}
+          </Toggle>
         </div>
         
         <div className="flex-1 overflow-hidden">
@@ -300,16 +285,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                     {filteredProjects.map(project => (
                       <div 
                         key={project.id} 
-                        className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-lg flex flex-col items-center`} 
+                        className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-lg flex flex-col items-center blue-glow`} 
                         style={{ 
                           width: '100%', 
-                          maxWidth: isMobile ? '75px' : '90px', // Smaller size
-                          minWidth: isMobile ? '50px' : '65px',
+                          maxWidth: isMobile ? '60px' : '70px', // Even smaller size
+                          minWidth: isMobile ? '45px' : '55px',
                           margin: '0 auto'
                         }}
                       >
-                        <div className="w-full aspect-square mb-1 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0"
-                             style={{ maxHeight: isMobile ? '45px' : '55px' }}> {/* Control the height */}
+                        <div className="w-full aspect-square mb-1 rounded-full overflow-hidden bg-muted/30 flex-shrink-0"
+                             style={{ maxHeight: isMobile ? '35px' : '40px' }}> {/* Circular logo */}
                           {project.logo ? (
                             <img 
                               src={project.logo} 
@@ -323,31 +308,31 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                           )}
                         </div>
                         <h3 className={`font-medium text-xs ${getTextColor()} text-center truncate w-full`}
-                            style={{ fontSize: isMobile ? '8px' : '10px' }}>{project.name}</h3> {/* Smaller font */}
+                            style={{ fontSize: isMobile ? '7px' : '9px' }}>{project.name}</h3> {/* Smaller font */}
                         
                         <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
                           {displayOptions.investment && (
                             <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                 style={{ fontSize: '8px' }}> {/* Smaller font */}
-                              Inv.: ${formatCompactNumber(project.investedAmount || 0)}
+                                 style={{ fontSize: '7px' }}> {/* Smaller font */}
+                              Inv: ${formatCompactNumber(project.investedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.earning && (
                             <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                 style={{ fontSize: '8px' }}> {/* Smaller font */}
-                              Earn.: ${formatCompactNumber(project.earnedAmount || 0)}
+                                 style={{ fontSize: '7px' }}> {/* Smaller font */}
+                              Earn: ${formatCompactNumber(project.earnedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.expected && (
                             <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                 style={{ fontSize: '8px' }}> {/* Smaller font */}
-                              Exp.: ${formatCompactNumber(project.expectedAmount || 0)}
+                                 style={{ fontSize: '7px' }}> {/* Smaller font */}
+                              Exp: ${formatCompactNumber(project.expectedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.stats && project.stats && project.stats.length > 0 && (
                             project.stats.map((stat, index) => (
                               <div key={index} className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                   style={{ fontSize: '8px' }}> {/* Smaller font */}
+                                   style={{ fontSize: '7px' }}> {/* Smaller font */}
                                 {stat.type}: {formatCompactNumber(stat.amount)}
                               </div>
                             ))
@@ -357,13 +342,13 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                     ))}
                   </div>
                 ) : (
-                  <UITable className={`border ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'} rounded-md overflow-hidden`}>
+                  <UITable className={`border ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'} rounded-md overflow-hidden ${theme === 'bright' ? 'bg-gradient-to-br from-white/80 to-blue-50/80' : ''}`}>
                     <TableHeader className={theme === 'dark' ? 'bg-black/30' : 'bg-gray-100'}>
                       <TableRow>
                         <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '150px' }}>Project</TableHead>
-                        {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv. ($)</TableHead>}
-                        {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn. ($)</TableHead>}
-                        {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp. ($)</TableHead>}
+                        {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv ($)</TableHead>}
+                        {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn ($)</TableHead>}
+                        {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp ($)</TableHead>}
                         {displayOptions.stats && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Stats</TableHead>}
                       </TableRow>
                     </TableHeader>
@@ -371,7 +356,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                       {filteredProjects.map(project => (
                         <TableRow key={project.id} className={theme === 'dark' ? 'border-white/10' : 'border-gray-200'}>
                           <TableCell className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-md overflow-hidden bg-muted/30">
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-muted/30"> {/* Circular logo */}
                               {project.logo ? (
                                 <img 
                                   src={project.logo} 

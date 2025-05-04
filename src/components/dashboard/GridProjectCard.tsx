@@ -17,13 +17,11 @@ interface GridProjectCardProps {
 }
 
 const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
-  const { updateProject, addProjectStat } = useAppStore();
+  const { updateProject, addProjectStat, removeProjectStat, updateProjectStat } = useAppStore();
   const [isAddStatsDialogOpen, setIsAddStatsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingStatIndex, setEditingStatIndex] = useState<number | null>(null);
   
-  // Get the function to remove stats from the store
-  const { projects, updateProject: updateProjectInStore } = useAppStore();
-
   const statsForm = useForm({
     defaultValues: {
       amount: 0,
@@ -40,12 +38,23 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
   });
 
   const onAddStatSubmit = (data: { amount: number; type: string }) => {
-    addProjectStat(project.id, {
-      amount: parseFloat(data.amount.toString()),
-      type: data.type
-    });
+    if (editingStatIndex !== null && project.stats) {
+      // Update existing stat
+      updateProjectStat(project.id, editingStatIndex, {
+        amount: parseFloat(data.amount.toString()),
+        type: data.type
+      });
+      setEditingStatIndex(null);
+      toast.success('Stat updated');
+    } else {
+      // Add new stat
+      addProjectStat(project.id, {
+        amount: parseFloat(data.amount.toString()),
+        type: data.type
+      });
+      toast.success('Stat added to project');
+    }
     statsForm.reset();
-    toast.success('Stat added to project');
   };
 
   const onEditSubmit = (data: { investedAmount: number; expectedAmount: number; earnedAmount: number }) => {
@@ -58,42 +67,33 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
     toast.success('Project stats updated');
   };
   
-  // Function to remove a stat
-  const removeStat = (statIndex: number) => {
-    const updatedStats = [...(project.stats || [])];
-    updatedStats.splice(statIndex, 1);
-    
-    updateProjectInStore(project.id, {
-      ...project,
-      stats: updatedStats
-    });
-    
-    toast.success('Stat removed successfully');
-  };
-  
-  // Function to update a stat
-  const updateStat = (statIndex: number, newAmount: number, newType: string) => {
+  // Function to edit a stat
+  const editStat = (statIndex: number) => {
     if (!project.stats) return;
     
-    const updatedStats = [...project.stats];
-    updatedStats[statIndex] = {
-      amount: newAmount,
-      type: newType
-    };
+    const stat = project.stats[statIndex];
+    statsForm.setValue('amount', stat.amount);
+    statsForm.setValue('type', stat.type);
+    setEditingStatIndex(statIndex);
+  };
+  
+  // Function to remove a stat
+  const removeStat = (statIndex: number) => {
+    removeProjectStat(project.id, statIndex);
+    toast.success('Stat removed successfully');
     
-    updateProjectInStore(project.id, {
-      ...project,
-      stats: updatedStats
-    });
-    
-    toast.success('Stat updated successfully');
+    // If we were editing this stat, reset the form
+    if (editingStatIndex === statIndex) {
+      setEditingStatIndex(null);
+      statsForm.reset();
+    }
   };
 
   return (
-    <div className="glass-card p-4 flex flex-col hover:blue-glow transition-all">
+    <div className="glass-card p-4 flex flex-col blue-glow transition-all">
       <h3 className="font-semibold text-base mb-3 truncate">{project.name}</h3>
       
-      <div className="w-full aspect-square mb-3 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+      <div className="w-full aspect-square mb-3 rounded-full overflow-hidden bg-muted flex-shrink-0"> {/* Changed to rounded-full for circular logo */}
         {project.logo ? (
           <img 
             src={project.logo} 
@@ -133,7 +133,9 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
           </DialogTrigger>
           <DialogContent className="glass-card border-accent/50">
             <DialogHeader>
-              <DialogTitle className="font-display">Add Stats to {project.name}</DialogTitle>
+              <DialogTitle className="font-display">
+                {editingStatIndex !== null ? 'Edit Stat' : 'Add Stats to'} {project.name}
+              </DialogTitle>
             </DialogHeader>
             
             <Form {...statsForm}>
@@ -153,6 +155,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                             step="any"
                             placeholder="98"
                             {...field}
+                            onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
                           />
                         </FormControl>
                       </FormItem>
@@ -179,15 +182,6 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                   />
                 </div>
                 
-                <div className="bg-muted/30 p-2 rounded-lg text-xs text-muted-foreground">
-                  <p className="font-medium mb-1">Examples:</p>
-                  <ul className="space-y-1">
-                    <li>• For Grass: amount 120, type days</li>
-                    <li>• For Bless: amount 98, type days</li>
-                    <li>• For Nexus: amount 45, type tasks</li>
-                  </ul>
-                </div>
-                
                 {project.stats && project.stats.length > 0 && (
                   <div className="mt-4">
                     <Label>Current Stats</Label>
@@ -202,11 +196,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                               variant="ghost" 
                               size="sm" 
                               className="h-6 w-6 p-0" 
-                              onClick={() => {
-                                statsForm.setValue('amount', stat.amount);
-                                statsForm.setValue('type', stat.type);
-                                toast.info('Stat values copied to form. Edit and submit to update.');
-                              }}
+                              onClick={() => editStat(index)}
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
@@ -225,7 +215,32 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                   </div>
                 )}
                 
-                <Button type="submit" className="w-full btn-gradient">Add Stat</Button>
+                <div className="bg-muted/30 p-2 rounded-lg text-xs text-muted-foreground">
+                  <p className="font-medium mb-1">Examples:</p>
+                  <ul className="space-y-1">
+                    <li>• For Grass: amount 120, type days</li>
+                    <li>• For Bless: amount 98, type days</li>
+                    <li>• For Nexus: amount 45, type tasks</li>
+                  </ul>
+                </div>
+                
+                <Button type="submit" className="w-full btn-gradient">
+                  {editingStatIndex !== null ? 'Update Stat' : 'Add Stat'}
+                </Button>
+                
+                {editingStatIndex !== null && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => {
+                      setEditingStatIndex(null);
+                      statsForm.reset();
+                    }}
+                  >
+                    Cancel Editing
+                  </Button>
+                )}
               </form>
             </Form>
           </DialogContent>
