@@ -119,7 +119,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
 
   // Define responsive grid columns based on screen size - Ensuring minimum 3 in a row
   const getGridColumns = () => {
-    return 'grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+    return 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6';
   };
 
   // Get background based on theme
@@ -256,7 +256,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto">
           <ScrollArea className="h-full w-full pr-4">
             <div 
               ref={imageRef} 
@@ -327,7 +327,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                     ))}
                   </div>
                 ) : (
-                  <div className="overflow-x-auto max-h-[400px]">
+                  <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
                     <UITable className={`border ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'} rounded-md overflow-hidden ${theme === 'bright' ? 'bg-gradient-to-br from-white/80 to-blue-50/80' : ''}`}>
                       <TableHeader className={theme === 'dark' ? 'bg-black/30' : 'bg-gray-100'}>
                         <TableRow>

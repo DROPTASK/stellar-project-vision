@@ -18,7 +18,7 @@ export default function BottomNav() {
   return (
     <nav className={`fixed bottom-0 left-0 right-0 z-50 ${
       theme === 'bright' 
-        ? 'bg-white border-t border-anime-soft-purple/30 shadow-lg' 
+        ? 'bg-white border-t border-anime-soft-purple/30' 
         : 'backdrop-blur-xl bg-black/30'
     }`}>
       <div className="flex justify-around items-center p-2 shadow-lg">

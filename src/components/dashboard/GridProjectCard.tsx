@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { useAppStore } from '../../store/appStore';
-import { PlusCircle, Edit, X, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTheme } from '../theme-provider';
 
 interface GridProjectCardProps {
@@ -18,8 +17,7 @@ interface GridProjectCardProps {
 }
 
 const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
-  const { updateProject, addProjectStat, removeProjectStat, updateProjectStat } = useAppStore();
-  const [isAddStatsDialogOpen, setIsAddStatsDialogOpen] = useState(false);
+  const { updateProject, updateProjectStat, removeProjectStat } = useAppStore();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingStatIndex, setEditingStatIndex] = useState<number | null>(null);
   const { theme } = useTheme();
@@ -36,40 +34,44 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
       investedAmount: project.investedAmount || 0,
       expectedAmount: project.expectedAmount || 0,
       earnedAmount: project.earnedAmount || 0,
+      points: project.points || 0,
+      note: project.note || '',
     },
   });
 
-  const onAddStatSubmit = (data: { amount: number; type: string }) => {
-    if (data.type.trim() === '') {
-      toast.error('Type cannot be empty');
-      return;
-    }
-
-    if (editingStatIndex !== null && project.stats) {
-      // Update existing stat
-      updateProjectStat(project.id, editingStatIndex, {
-        amount: parseFloat(data.amount.toString()),
-        type: data.type
-      });
+  const onEditStatSubmit = (data: { amount: number; type: string }) => {
+    if (editingStatIndex !== null) {
+      // Don't add empty stats
+      if (data.type.trim() === '' || data.amount === 0) {
+        // If empty, remove the stat
+        removeProjectStat(project.id, editingStatIndex);
+        toast.success('Stat removed');
+      } else {
+        // Update existing stat
+        updateProjectStat(project.id, editingStatIndex, {
+          amount: parseFloat(data.amount.toString()),
+          type: data.type
+        });
+        toast.success('Stat updated');
+      }
       setEditingStatIndex(null);
-      toast.success('Stat updated');
-    } else {
-      // Add new stat
-      addProjectStat(project.id, {
-        amount: parseFloat(data.amount.toString()),
-        type: data.type
-      });
-      toast.success('Stat added to project');
     }
     statsForm.reset();
-    setIsAddStatsDialogOpen(false);
   };
 
-  const onEditSubmit = (data: { investedAmount: number; expectedAmount: number; earnedAmount: number }) => {
+  const onEditSubmit = (data: { 
+    investedAmount: number; 
+    expectedAmount: number; 
+    earnedAmount: number; 
+    points: number;
+    note: string;
+  }) => {
     updateProject(project.id, {
       investedAmount: parseFloat(data.investedAmount.toString()),
       expectedAmount: parseFloat(data.expectedAmount.toString()),
       earnedAmount: parseFloat(data.earnedAmount.toString()),
+      points: parseFloat(data.points.toString()),
+      note: data.note,
     });
     setIsEditDialogOpen(false);
     toast.success('Project stats updated');
@@ -83,7 +85,6 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
     statsForm.setValue('amount', stat.amount);
     statsForm.setValue('type', stat.type);
     setEditingStatIndex(statIndex);
-    setIsAddStatsDialogOpen(true);
   };
   
   // Function to remove a stat
@@ -99,14 +100,14 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
   };
 
   const cardClass = theme === 'bright' 
-    ? 'bg-gradient-to-br from-anime-soft-blue/60 to-anime-soft-purple/40 p-4 flex flex-col rounded-2xl border border-anime-soft-purple/30 shadow-sm transition-all animate-fade-in'
-    : 'glass-card p-4 flex flex-col blue-glow transition-all';
+    ? 'bg-gradient-to-br from-anime-soft-blue/60 to-anime-soft-purple/40 p-3 flex flex-col rounded-2xl border border-anime-soft-purple/30 shadow-sm transition-all animate-fade-in'
+    : 'glass-card p-3 flex flex-col blue-glow transition-all';
 
   return (
-    <div className={cardClass}>
-      <h3 className="font-semibold text-base mb-3 truncate">{project.name}</h3>
+    <div className={cardClass} style={{ maxWidth: '100%', minHeight: '180px' }}>
+      <h3 className="font-semibold text-sm mb-2 truncate">{project.name}</h3>
       
-      <div className="w-full aspect-square mb-3 rounded-full overflow-hidden bg-muted flex-shrink-0"> 
+      <div className="w-full aspect-square mb-3 rounded-full overflow-hidden bg-muted flex-shrink-0" style={{ maxHeight: '50px', maxWidth: '50px', margin: '0 auto' }}> 
         {project.logo ? (
           <img 
             src={project.logo} 
@@ -114,45 +115,50 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
             className="object-cover w-full h-full"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-primary text-2xl font-semibold">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-primary text-lg font-semibold">
             {project.name.charAt(0)}
           </div>
         )}
       </div>
       
-      {project.stats && project.stats.length > 0 ? (
-        <div className="flex-1">
-          <div className="flex flex-wrap gap-1 mb-3">
-            {project.stats.map((stat, index) => (
-              <div key={index} className={`${theme === 'bright' ? 'bg-anime-soft-blue/60' : 'bg-muted/30'} text-xs px-2 py-0.5 rounded-full`}>
-                {stat.amount} {stat.type}
-              </div>
-            ))}
+      <div className="flex-1 flex flex-col justify-center">
+        <div className="grid grid-cols-2 gap-1 text-center">
+          <div className="text-xs text-muted-foreground">Invested</div>
+          <div className="text-xs font-medium">${project.investedAmount || 0}</div>
+          
+          <div className="text-xs text-muted-foreground">Expected</div>
+          <div className="text-xs font-medium">${project.expectedAmount || 0}</div>
+          
+          <div className="text-xs text-muted-foreground">Earned</div>
+          <div className="text-xs font-medium">${project.earnedAmount || 0}</div>
+          
+          <div className="text-xs text-muted-foreground">Points</div>
+          <div className="text-xs font-medium">{project.points || 0}</div>
+        </div>
+        
+        {project.note && (
+          <div className="mt-2 text-xs text-center text-muted-foreground bg-muted/20 rounded p-1">
+            {project.note}
           </div>
-        </div>
-      ) : (
-        <div className="flex-1">
-          <p className="text-xs text-muted-foreground mb-2">No custom stats yet</p>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex flex-col gap-1 mt-2">
-        <Dialog open={isAddStatsDialogOpen} onOpenChange={setIsAddStatsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className={`w-full ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink' : ''}`}>
-              <PlusCircle className="h-3 w-3 mr-1" />
-              Add Stats
-            </Button>
-          </DialogTrigger>
+        <Dialog open={editingStatIndex !== null} onOpenChange={(open) => {
+          if (!open) {
+            setEditingStatIndex(null);
+            statsForm.reset();
+          }
+        }}>
           <DialogContent className={theme === 'bright' ? 'bg-white border-anime-soft-purple/50 rounded-xl' : 'glass-card border-accent/50'}>
             <DialogHeader>
               <DialogTitle className="font-display">
-                {editingStatIndex !== null ? 'Edit Stat' : 'Add Stats to'} {project.name}
+                Edit Stat for {project.name}
               </DialogTitle>
             </DialogHeader>
             
             <Form {...statsForm}>
-              <form onSubmit={statsForm.handleSubmit(onAddStatSubmit)} className="space-y-4 mt-4">
+              <form onSubmit={statsForm.handleSubmit(onEditStatSubmit)} className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={statsForm.control}
@@ -195,69 +201,28 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                   />
                 </div>
                 
-                {project.stats && project.stats.length > 0 && (
-                  <div className="mt-4">
-                    <Label>Current Stats</Label>
-                    <ScrollArea className="h-[120px] mt-2">
-                      <div className="space-y-2">
-                        {project.stats.map((stat, index) => (
-                          <div key={index} className={`flex items-center gap-2 p-2 ${theme === 'bright' ? 'bg-anime-soft-gray/30' : 'bg-muted/20'} rounded-lg`}>
-                            <div className="flex-1">
-                              <span className="text-sm font-medium">{stat.amount} {stat.type}</span>
-                            </div>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-6 w-6 p-0" 
-                              onClick={() => editStat(index)}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-6 w-6 p-0 text-destructive" 
-                              onClick={() => removeStat(index)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </div>
-                )}
-                
-                <div className={`${theme === 'bright' ? 'bg-anime-soft-gray/30' : 'bg-muted/30'} p-2 rounded-lg text-xs text-muted-foreground`}>
-                  <p className="font-medium mb-1">Examples:</p>
-                  <ul className="space-y-1">
-                    <li>• For Grass: amount 120, type days</li>
-                    <li>• For Bless: amount 98, type days</li>
-                    <li>• For Nexus: amount 45, type tasks</li>
-                  </ul>
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className={`w-full ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink' : 'btn-gradient'}`}
-                >
-                  {editingStatIndex !== null ? 'Update Stat' : 'Add Stat'}
-                </Button>
-                
-                {editingStatIndex !== null && (
+                <div className="flex gap-2">
+                  <Button 
+                    type="submit" 
+                    className={`flex-1 ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink' : 'btn-gradient'}`}
+                  >
+                    Update
+                  </Button>
+                  
                   <Button 
                     type="button" 
-                    variant="outline" 
-                    className="w-full" 
+                    variant="destructive" 
+                    className="flex-1" 
                     onClick={() => {
-                      setEditingStatIndex(null);
-                      statsForm.reset();
-                      setIsAddStatsDialogOpen(false);
+                      if (editingStatIndex !== null) {
+                        removeStat(editingStatIndex);
+                        setEditingStatIndex(null);
+                      }
                     }}
                   >
-                    Cancel Editing
+                    Delete
                   </Button>
-                )}
+                </div>
               </form>
             </Form>
           </DialogContent>
@@ -266,9 +231,8 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogTrigger asChild>
             <Button 
-              variant="outline" 
               size="sm" 
-              className={`w-full ${theme === 'bright' ? 'border-anime-soft-purple/30 text-anime-vivid-purple' : ''}`}
+              className={`w-full text-xs ${theme === 'bright' ? 'bg-anime-vivid-purple hover:bg-anime-magenta-pink text-white' : ''}`}
             >
               <Edit className="h-3 w-3 mr-1" />
               Edit Stats
@@ -280,36 +244,62 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
             </DialogHeader>
             
             <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
-              <div className="grid gap-2">
-                <Label htmlFor="investedAmount">Invested Amount</Label>
-                <Input 
-                  id="investedAmount" 
-                  type="number" 
-                  className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
-                  step="any"
-                  {...editForm.register('investedAmount')}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="investedAmount">Invested Amount</Label>
+                  <Input 
+                    id="investedAmount" 
+                    type="number" 
+                    className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
+                    step="any"
+                    {...editForm.register('investedAmount')}
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="earnedAmount">Earned Amount</Label>
+                  <Input 
+                    id="earnedAmount" 
+                    type="number" 
+                    className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
+                    step="any"
+                    {...editForm.register('earnedAmount')}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="expectedAmount">Expected Amount</Label>
+                  <Input 
+                    id="expectedAmount" 
+                    type="number" 
+                    className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
+                    step="any"
+                    {...editForm.register('expectedAmount')}
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="points">Points</Label>
+                  <Input 
+                    id="points" 
+                    type="number" 
+                    className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
+                    step="any"
+                    {...editForm.register('points')}
+                  />
+                </div>
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="expectedAmount">Expected Amount</Label>
+                <Label htmlFor="note">Note / Achievement</Label>
                 <Input 
-                  id="expectedAmount" 
-                  type="number" 
+                  id="note" 
+                  type="text" 
                   className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
-                  step="any"
-                  {...editForm.register('expectedAmount')}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="earnedAmount">Earned Amount</Label>
-                <Input 
-                  id="earnedAmount" 
-                  type="number" 
-                  className={theme === 'bright' ? 'bg-anime-soft-gray/50 border-anime-soft-purple/30' : 'bg-muted/50'}
-                  step="any"
-                  {...editForm.register('earnedAmount')}
+                  placeholder="Any achievement or note"
+                  {...editForm.register('note')}
                 />
               </div>
               

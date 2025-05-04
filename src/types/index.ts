@@ -1,4 +1,3 @@
-
 export interface Project {
   id: string;
   name: string;
@@ -6,6 +5,8 @@ export interface Project {
   investedAmount?: number;
   expectedAmount?: number;
   earnedAmount?: number;
+  points?: number;  // New field for points
+  note?: string;    // New field for achievements/notes
   type?: string;
   isTestnet?: boolean;
   stats?: ProjectStat[];

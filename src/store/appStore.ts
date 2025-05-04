@@ -10,8 +10,8 @@ interface AppStore extends AppState {
   updateProject: (id: string, updates: Partial<Project>) => void;
   removeProject: (id: string) => void;
   addProjectStat: (projectId: string, stat: ProjectStat) => void;
-  removeProjectStat: (projectId: string, statIndex: number) => void; // New function to remove a stat
-  updateProjectStat: (projectId: string, statIndex: number, updatedStat: ProjectStat) => void; // New function to update a stat
+  removeProjectStat: (projectId: string, statIndex: number) => void;
+  updateProjectStat: (projectId: string, statIndex: number, updatedStat: ProjectStat) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   removeTransaction: (id: string) => void;
   addProjectFromExplore: (exploreProjectId: string, additionalDetails: Partial<Project>) => void;
@@ -42,6 +42,8 @@ export const useAppStore = create<AppStore>()(
           investedAmount: project.investedAmount || 0,
           expectedAmount: project.expectedAmount || 0,
           earnedAmount: project.earnedAmount || 0,
+          points: project.points || 0,
+          note: project.note || '',
           stats: project.stats || [],
         };
         set((state) => ({
@@ -77,7 +79,6 @@ export const useAppStore = create<AppStore>()(
         }));
       },
       
-      // New function to remove a stat
       removeProjectStat: (projectId, statIndex) => {
         set((state) => ({
           projects: state.projects.map((project) => {
@@ -94,7 +95,6 @@ export const useAppStore = create<AppStore>()(
         }));
       },
       
-      // New function to update a stat
       updateProjectStat: (projectId, statIndex, updatedStat) => {
         set((state) => ({
           projects: state.projects.map((project) => {
@@ -186,6 +186,8 @@ export const useAppStore = create<AppStore>()(
             investedAmount: additionalDetails.investedAmount || 0,
             expectedAmount: additionalDetails.expectedAmount || 0,
             earnedAmount: additionalDetails.earnedAmount || 0,
+            points: additionalDetails.points || 0,
+            note: additionalDetails.note || '',
             type: additionalDetails.type || '',
             isTestnet: additionalDetails.isTestnet || false,
             stats: [],
