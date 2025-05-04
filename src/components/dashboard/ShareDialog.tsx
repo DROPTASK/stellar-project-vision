@@ -117,12 +117,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     return text;
   };
 
-  // Define responsive grid columns based on screen size - Updated to show minimum 3 in row
+  // Define responsive grid columns based on screen size - Ensuring minimum 3 in a row
   const getGridColumns = () => {
-    if (isMobile) {
-      return filteredProjects.length === 1 ? 'grid-cols-1' : 'grid-cols-2';
-    }
-    return filteredProjects.length <= 3 ? 'grid-cols-3' : 'grid-cols-4';
+    return 'grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
   };
 
   // Get background based on theme
@@ -156,8 +153,6 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
               cacheBust: true,
               pixelRatio: 2,
               backgroundColor: theme === 'dark' ? '#1a1b26' : '#ffffff',
-              width: imageRef.current.offsetWidth,
-              height: imageRef.current.offsetHeight,
             });
             
             const link = document.createElement('a');
@@ -168,16 +163,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
           } catch (err) {
             // Fallback to PDF if image fails
             try {
-              await generatePDF(imageRef, `my-projects-${viewMode}.pdf`, {
-                margin: [40, 40, 40, 40], // Increased margins to prevent cutoff
-                filename: `my-projects-${viewMode}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { 
-                  scale: 2,
-                  useCORS: true,
-                  allowTaint: true
-                }
-              });
+              await generatePDF(imageRef, `my-projects-${viewMode}.pdf`);
               toast.success('PDF downloaded successfully');
             } catch (pdfErr) {
               toast.error('Failed to generate PDF or image');
@@ -271,10 +257,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
         </div>
         
         <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full w-full">
+          <ScrollArea className="h-full w-full pr-4">
             <div 
               ref={imageRef} 
-              className={`w-full p-4 rounded-xl ${getBackground()} min-h-[300px]`}
+              className={`w-full p-4 rounded-xl ${getBackground()}`}
               style={{ minWidth: "100%" }}
             >
               <h2 className={`text-xl font-display ${getTextColor()} text-center mb-4`}>My Projects</h2>
@@ -288,8 +274,6 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                         className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-xl flex flex-col items-center`} 
                         style={{ 
                           width: '100%', 
-                          maxWidth: '80px',
-                          minWidth: '60px',
                           margin: '0 auto'
                         }}
                       >
@@ -343,73 +327,75 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                     ))}
                   </div>
                 ) : (
-                  <UITable className={`border ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'} rounded-md overflow-hidden ${theme === 'bright' ? 'bg-gradient-to-br from-white/80 to-blue-50/80' : ''}`}>
-                    <TableHeader className={theme === 'dark' ? 'bg-black/30' : 'bg-gray-100'}>
-                      <TableRow>
-                        <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '150px' }}>Project</TableHead>
-                        {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv</TableHead>}
-                        {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn</TableHead>}
-                        {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp</TableHead>}
-                        {displayOptions.stats && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Stats</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredProjects.map(project => (
-                        <TableRow key={project.id} className={theme === 'dark' ? 'border-white/10' : 'border-gray-200'}>
-                          <TableCell className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full overflow-hidden bg-muted/30"> {/* Circular logo */}
-                              {project.logo ? (
-                                <img 
-                                  src={project.logo} 
-                                  alt={`${project.name} logo`}
-                                  className="object-cover w-full h-full"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-indigo-700 text-white text-xs">
-                                  {project.name.charAt(0)}
-                                </div>
-                              )}
-                            </div>
-                            <span className={theme === 'dark' ? 'text-white font-medium text-sm' : 'text-gray-800 font-medium text-sm'}>{project.name}</span>
-                          </TableCell>
-                          
-                          {displayOptions.investment && (
-                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
-                              {formatCompactNumber(project.investedAmount || 0)}
-                            </TableCell>
-                          )}
-                          
-                          {displayOptions.earning && (
-                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
-                              {formatCompactNumber(project.earnedAmount || 0)}
-                            </TableCell>
-                          )}
-                          
-                          {displayOptions.expected && (
-                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
-                              {formatCompactNumber(project.expectedAmount || 0)}
-                            </TableCell>
-                          )}
-                          
-                          {displayOptions.stats && (
-                            <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
-                              {project.stats && project.stats.length > 0 ? (
-                                <div className="flex flex-col items-end">
-                                  {project.stats.map((stat, idx) => (
-                                    <div key={idx} className="text-xs">
-                                      {stat.type}: {formatCompactNumber(stat.amount)}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                "-"
-                              )}
-                            </TableCell>
-                          )}
+                  <div className="overflow-x-auto max-h-[400px]">
+                    <UITable className={`border ${theme === 'dark' ? 'border-white/10' : 'border-gray-200'} rounded-md overflow-hidden ${theme === 'bright' ? 'bg-gradient-to-br from-white/80 to-blue-50/80' : ''}`}>
+                      <TableHeader className={theme === 'dark' ? 'bg-black/30' : 'bg-gray-100'}>
+                        <TableRow>
+                          <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '150px' }}>Project</TableHead>
+                          {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv</TableHead>}
+                          {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn</TableHead>}
+                          {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp</TableHead>}
+                          {displayOptions.stats && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Stats</TableHead>}
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </UITable>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredProjects.map(project => (
+                          <TableRow key={project.id} className={theme === 'dark' ? 'border-white/10' : 'border-gray-200'}>
+                            <TableCell className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full overflow-hidden bg-muted/30"> {/* Circular logo */}
+                                {project.logo ? (
+                                  <img 
+                                    src={project.logo} 
+                                    alt={`${project.name} logo`}
+                                    className="object-cover w-full h-full"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center bg-indigo-700 text-white text-xs">
+                                    {project.name.charAt(0)}
+                                  </div>
+                                )}
+                              </div>
+                              <span className={theme === 'dark' ? 'text-white font-medium text-sm' : 'text-gray-800 font-medium text-sm'}>{project.name}</span>
+                            </TableCell>
+                            
+                            {displayOptions.investment && (
+                              <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
+                                {formatCompactNumber(project.investedAmount || 0)}
+                              </TableCell>
+                            )}
+                            
+                            {displayOptions.earning && (
+                              <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
+                                {formatCompactNumber(project.earnedAmount || 0)}
+                              </TableCell>
+                            )}
+                            
+                            {displayOptions.expected && (
+                              <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
+                                {formatCompactNumber(project.expectedAmount || 0)}
+                              </TableCell>
+                            )}
+                            
+                            {displayOptions.stats && (
+                              <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
+                                {project.stats && project.stats.length > 0 ? (
+                                  <div className="flex flex-col items-end">
+                                    {project.stats.map((stat, idx) => (
+                                      <div key={idx} className="text-xs">
+                                        {stat.type}: {formatCompactNumber(stat.amount)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  "-"
+                                )}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </UITable>
+                  </div>
                 )
               ) : (
                 <p className={getTextColor() + " text-center"}>No projects selected</p>

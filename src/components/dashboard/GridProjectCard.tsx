@@ -40,6 +40,11 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
   });
 
   const onAddStatSubmit = (data: { amount: number; type: string }) => {
+    if (data.type.trim() === '') {
+      toast.error('Type cannot be empty');
+      return;
+    }
+
     if (editingStatIndex !== null && project.stats) {
       // Update existing stat
       updateProjectStat(project.id, editingStatIndex, {
@@ -57,6 +62,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
       toast.success('Stat added to project');
     }
     statsForm.reset();
+    setIsAddStatsDialogOpen(false);
   };
 
   const onEditSubmit = (data: { investedAmount: number; expectedAmount: number; earnedAmount: number }) => {
@@ -93,7 +99,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
   };
 
   const cardClass = theme === 'bright' 
-    ? 'bg-gradient-to-br from-anime-soft-blue/60 to-anime-soft-purple/40 p-4 flex flex-col rounded-2xl border border-anime-soft-purple/30 shadow-sm hover:shadow-md transition-all animate-fade-in'
+    ? 'bg-gradient-to-br from-anime-soft-blue/60 to-anime-soft-purple/40 p-4 flex flex-col rounded-2xl border border-anime-soft-purple/30 shadow-sm transition-all animate-fade-in'
     : 'glass-card p-4 flex flex-col blue-glow transition-all';
 
   return (
@@ -246,6 +252,7 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                     onClick={() => {
                       setEditingStatIndex(null);
                       statsForm.reset();
+                      setIsAddStatsDialogOpen(false);
                     }}
                   >
                     Cancel Editing

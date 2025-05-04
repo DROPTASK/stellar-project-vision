@@ -18,7 +18,7 @@ export default function BottomNav() {
   return (
     <nav className={`fixed bottom-0 left-0 right-0 z-50 ${
       theme === 'bright' 
-        ? 'bg-anime-gradient backdrop-blur-md border-t border-anime-soft-purple/30' 
+        ? 'bg-white border-t border-anime-soft-purple/30 shadow-lg' 
         : 'backdrop-blur-xl bg-black/30'
     }`}>
       <div className="flex justify-around items-center p-2 shadow-lg">
@@ -29,10 +29,10 @@ export default function BottomNav() {
             className={`flex flex-col items-center justify-center px-1 py-1.5 rounded-lg transition-all duration-200 ${
               location.pathname === item.path
                 ? theme === 'bright' 
-                  ? 'text-anime-vivid-purple bg-anime-soft-purple/50' 
+                  ? 'text-anime-vivid-purple bg-anime-soft-purple/20' 
                   : 'text-primary'
                 : theme === 'bright'
-                  ? 'text-gray-600 hover:text-anime-vivid-purple hover:bg-anime-soft-purple/30'
+                  ? 'text-gray-600 hover:text-anime-vivid-purple hover:bg-anime-soft-purple/10'
                   : 'text-muted-foreground hover:text-primary'
             }`}
           >
@@ -45,7 +45,7 @@ export default function BottomNav() {
       </div>
       <div className={`h-safe-area-bottom ${
         theme === 'bright' 
-          ? 'bg-anime-gradient backdrop-blur-md' 
+          ? 'bg-white' 
           : 'bg-black/30'
       }`} />
     </nav>
