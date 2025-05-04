@@ -7,13 +7,54 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
+    /* Bright theme colors (anime-inspired) */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 210 40% 98%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 210 40% 98%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 252 87% 59%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 191 97% 77%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 252 87% 59%;
+
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 142.1 70.6% 45.3%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 142.4 71.8% 29.2%;
+  }
+
+  /* Dark theme with lighter tone */
+  :root:not(.bright-theme) {
+    --background: 240 10% 9%; /* Lighter than before */
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 3.9%;
+    --card: 240 10% 9%; /* Lighter than before */
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 3.9%;
+    --popover: 240 10% 9%; /* Lighter than before */
     --popover-foreground: 0 0% 98%;
 
     --primary: 252 87% 59%;
@@ -22,8 +63,8 @@
     --secondary: 250 95% 76%;
     --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 240 3.7% 20%; /* Lighter than before */
+    --muted-foreground: 240 5% 74.9%; /* Lighter than before */
 
     --accent: 191 97% 77%;
     --accent-foreground: 240 5.9% 10%;
@@ -31,22 +72,23 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 240 3.7% 20%; /* Lighter than before */
+    --input: 240 3.7% 20%; /* Lighter than before */
     --ring: 142.4 71.8% 29.2%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 240 10% 3.9%;
+    --sidebar-background: 240 10% 9%; /* Lighter than before */
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 142.1 70.6% 45.3%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 240 3.7% 20%; /* Lighter than before */
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 240 3.7% 20%; /* Lighter than before */
     --sidebar-ring: 142.4 71.8% 29.2%;
   }
 
+  /* Bright theme (anime-inspired) */
   .bright-theme {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
@@ -97,16 +139,31 @@
 }
 
 @layer components {
+  /* Modified glass-card for darker theme */
   .glass-card {
     @apply bg-black/30 backdrop-blur-md border border-white/10 rounded-xl;
+  }
+  
+  /* Anime-inspired card for bright theme */
+  .bright-theme .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-primary/10 rounded-2xl shadow-md;
   }
   
   .blue-glow {
     @apply shadow-[0_0_15px_rgba(56,189,248,0.5)];
   }
   
+  .bright-theme .blue-glow {
+    @apply shadow-[0_0_15px_rgba(111,149,255,0.5)];
+  }
+  
   .btn-gradient {
     @apply bg-gradient-primary text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-all;
+  }
+  
+  /* Anime-style button for bright theme */
+  .bright-theme .btn-gradient {
+    @apply bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium py-2 px-4 rounded-xl shadow-md hover:shadow-lg transition-all;
   }
   
   .tag {
@@ -139,5 +196,14 @@
   
   .project-card {
     @apply glass-card p-4 my-3 transition-all duration-300 hover:blue-glow;
+  }
+  
+  /* Anime-inspired UI elements for bright theme */
+  .bright-theme .project-card {
+    @apply bg-white/80 rounded-2xl border border-primary/10 p-4 my-3 shadow-md transition-all duration-300 hover:shadow-lg;
+  }
+  
+  .bright-theme .metric-card {
+    @apply bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-primary/10 p-4 shadow-sm;
   }
 }

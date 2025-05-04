@@ -10,6 +10,8 @@ interface AppStore extends AppState {
   updateProject: (id: string, updates: Partial<Project>) => void;
   removeProject: (id: string) => void;
   addProjectStat: (projectId: string, stat: ProjectStat) => void;
+  removeProjectStat: (projectId: string, statIndex: number) => void; // New function to remove a stat
+  updateProjectStat: (projectId: string, statIndex: number, updatedStat: ProjectStat) => void; // New function to update a stat
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   removeTransaction: (id: string) => void;
   addProjectFromExplore: (exploreProjectId: string, additionalDetails: Partial<Project>) => void;
@@ -72,6 +74,40 @@ export const useAppStore = create<AppStore>()(
                 }
               : project
           ),
+        }));
+      },
+      
+      // New function to remove a stat
+      removeProjectStat: (projectId, statIndex) => {
+        set((state) => ({
+          projects: state.projects.map((project) => {
+            if (project.id === projectId && project.stats) {
+              const updatedStats = [...project.stats];
+              updatedStats.splice(statIndex, 1);
+              return {
+                ...project,
+                stats: updatedStats,
+              };
+            }
+            return project;
+          }),
+        }));
+      },
+      
+      // New function to update a stat
+      updateProjectStat: (projectId, statIndex, updatedStat) => {
+        set((state) => ({
+          projects: state.projects.map((project) => {
+            if (project.id === projectId && project.stats) {
+              const updatedStats = [...project.stats];
+              updatedStats[statIndex] = updatedStat;
+              return {
+                ...project,
+                stats: updatedStats,
+              };
+            }
+            return project;
+          }),
         }));
       },
 

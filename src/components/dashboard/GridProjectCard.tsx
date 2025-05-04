@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { useAppStore } from '../../store/appStore';
-import { PlusCircle, Edit } from 'lucide-react';
+import { PlusCircle, Edit, X, Trash2 } from 'lucide-react';
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface GridProjectCardProps {
   project: Project;
@@ -19,6 +20,9 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
   const { updateProject, addProjectStat } = useAppStore();
   const [isAddStatsDialogOpen, setIsAddStatsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  // Get the function to remove stats from the store
+  const { projects, updateProject: updateProjectInStore } = useAppStore();
 
   const statsForm = useForm({
     defaultValues: {
@@ -52,6 +56,37 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
     });
     setIsEditDialogOpen(false);
     toast.success('Project stats updated');
+  };
+  
+  // Function to remove a stat
+  const removeStat = (statIndex: number) => {
+    const updatedStats = [...(project.stats || [])];
+    updatedStats.splice(statIndex, 1);
+    
+    updateProjectInStore(project.id, {
+      ...project,
+      stats: updatedStats
+    });
+    
+    toast.success('Stat removed successfully');
+  };
+  
+  // Function to update a stat
+  const updateStat = (statIndex: number, newAmount: number, newType: string) => {
+    if (!project.stats) return;
+    
+    const updatedStats = [...project.stats];
+    updatedStats[statIndex] = {
+      amount: newAmount,
+      type: newType
+    };
+    
+    updateProjectInStore(project.id, {
+      ...project,
+      stats: updatedStats
+    });
+    
+    toast.success('Stat updated successfully');
   };
 
   return (
@@ -152,6 +187,43 @@ const GridProjectCard: React.FC<GridProjectCardProps> = ({ project }) => {
                     <li>• For Nexus: amount 45, type tasks</li>
                   </ul>
                 </div>
+                
+                {project.stats && project.stats.length > 0 && (
+                  <div className="mt-4">
+                    <Label>Current Stats</Label>
+                    <ScrollArea className="h-[120px] mt-2">
+                      <div className="space-y-2">
+                        {project.stats.map((stat, index) => (
+                          <div key={index} className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
+                            <div className="flex-1">
+                              <span className="text-sm font-medium">{stat.amount} {stat.type}</span>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0" 
+                              onClick={() => {
+                                statsForm.setValue('amount', stat.amount);
+                                statsForm.setValue('type', stat.type);
+                                toast.info('Stat values copied to form. Edit and submit to update.');
+                              }}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0 text-destructive" 
+                              onClick={() => removeStat(index)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
                 
                 <Button type="submit" className="w-full btn-gradient">Add Stat</Button>
               </form>

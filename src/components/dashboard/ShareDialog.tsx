@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAppStore } from '../../store/appStore';
 import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
-import { Download, Copy, Table, ScrollText, FileSpreadsheet } from 'lucide-react';
+import { Copy, Table, ScrollText, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '../../hooks/use-mobile';
 import { formatCompactNumber } from '../../lib/utils';
@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { Table as UITable, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { generatePDF } from '../../lib/pdfUtils';
+import { Toggle } from '../ui/toggle';
 
 interface ShareDialogProps {
   isOpen: boolean;
@@ -123,7 +124,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
              'grid-cols-3';
     }
     return filteredProjects.length <= 4 ? 'grid-cols-2' : 
-           filteredProjects.length <= 8 ? 'grid-cols-3' : 
+           filteredProjects.length <= 9 ? 'grid-cols-3' : 
            'grid-cols-4';
   };
 
@@ -146,15 +147,48 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     return theme === 'dark' ? 'bg-black/30' : 'bg-white/60';
   };
 
-  // Download as PDF
+  // Download as PDF - Enhanced for Telegram browser compatibility
   const handleDownloadPDF = async () => {
     try {
-      const success = await generatePDF(imageRef, `my-projects-${viewMode}.pdf`);
-      if (success) {
-        toast.success('PDF downloaded successfully');
-      } else {
-        toast.error('Failed to generate PDF');
-      }
+      // Adding a small delay to ensure all content is rendered
+      setTimeout(async () => {
+        const success = await generatePDF(imageRef, `my-projects-${viewMode}.pdf`, {
+          margin: [10, 10, 10, 10], // Add margins to prevent content cutoff
+          enableLinks: false, // Disable links for better compatibility
+          filename: `my-projects-${viewMode}.pdf`,
+          image: { type: 'jpeg', quality: 0.95 }, // Use JPEG for better compatibility
+          html2canvas: { 
+            scale: 2, // Higher scale for better quality
+            useCORS: true,
+            logging: false,
+            allowTaint: true
+          }
+        });
+        
+        if (success) {
+          toast.success('PDF downloaded successfully');
+        } else {
+          // Alternative download method for Telegram browser
+          try {
+            if (imageRef.current) {
+              const dataUrl = await toPng(imageRef.current, { 
+                cacheBust: true,
+                pixelRatio: 2,
+                backgroundColor: theme === 'dark' ? '#1a1b26' : '#ffffff'
+              });
+              
+              const link = document.createElement('a');
+              link.download = `my-projects-${viewMode}.png`;
+              link.href = dataUrl;
+              link.click();
+              toast.success('Project image downloaded successfully');
+            }
+          } catch (err) {
+            toast.error('Failed to generate image or PDF');
+            console.error(err);
+          }
+        }
+      }, 500);
     } catch (error) {
       toast.error('Failed to generate PDF');
       console.error(error);
@@ -168,90 +202,88 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
           <DialogTitle className="font-display">Share My Projects</DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-wrap gap-2 mb-4">
-          <DropdownMenu open={optionsDropdownOpen} onOpenChange={setOptionsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">Display Options</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Show Information</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem 
-                checked={displayOptions.investment}
-                onCheckedChange={() => toggleDisplayOption('investment')}
-              >
-                Investment
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem 
-                checked={displayOptions.earning}
-                onCheckedChange={() => toggleDisplayOption('earning')}
-              >
-                Earning
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem 
-                checked={displayOptions.expected}
-                onCheckedChange={() => toggleDisplayOption('expected')}
-              >
-                Expected
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem 
-                checked={displayOptions.stats}
-                onCheckedChange={() => toggleDisplayOption('stats')}
-              >
-                Custom Stats
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <DropdownMenu open={projectsDropdownOpen} onOpenChange={setProjectsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">Select Projects</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="max-h-60">
-              <ScrollArea className="h-60 pr-4">
-                <DropdownMenuLabel>Choose Projects</DropdownMenuLabel>
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <DropdownMenu open={optionsDropdownOpen} onOpenChange={setOptionsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">Display Options</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Show Information</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {projects.map(project => (
-                  <DropdownMenuCheckboxItem 
-                    key={project.id}
-                    checked={selectedProjects.includes(project.id)}
-                    onSelect={(e) => {
-                      e.preventDefault(); // Prevent default to avoid closing
-                      toggleProjectSelection(project.id);
-                    }}
-                  >
-                    {project.name}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </ScrollArea>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuCheckboxItem 
+                  checked={displayOptions.investment}
+                  onCheckedChange={() => toggleDisplayOption('investment')}
+                >
+                  Investment
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem 
+                  checked={displayOptions.earning}
+                  onCheckedChange={() => toggleDisplayOption('earning')}
+                >
+                  Earning
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem 
+                  checked={displayOptions.expected}
+                  onCheckedChange={() => toggleDisplayOption('expected')}
+                >
+                  Expected
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem 
+                  checked={displayOptions.stats}
+                  onCheckedChange={() => toggleDisplayOption('stats')}
+                >
+                  Custom Stats
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu open={projectsDropdownOpen} onOpenChange={setProjectsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">Select Projects</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="max-h-60">
+                <ScrollArea className="h-60 pr-4">
+                  <DropdownMenuLabel>Choose Projects</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {projects.map(project => (
+                    <DropdownMenuCheckboxItem 
+                      key={project.id}
+                      checked={selectedProjects.includes(project.id)}
+                      onSelect={(e) => {
+                        e.preventDefault(); // Prevent default to avoid closing
+                        toggleProjectSelection(project.id);
+                      }}
+                    >
+                      {project.name}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </ScrollArea>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-          >
-            {viewMode === 'grid' ? (
-              <>
-                <Table className="mr-1 h-4 w-4" />
-                Table View
-              </>
-            ) : (
-              <>
-                <ScrollText className="mr-1 h-4 w-4" />
-                Grid View
-              </>
-            )}
-          </Button>
-
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setTheme(theme === 'dark' ? 'bright' : 'dark')}
-          >
-            {theme === 'dark' ? 'Bright Theme' : 'Dark Theme'}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Toggle
+              pressed={viewMode === 'table'}
+              onPressedChange={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+              size="sm"
+              aria-label={viewMode === 'grid' ? 'Switch to table view' : 'Switch to grid view'}
+              className="p-1 h-7"
+            >
+              {viewMode === 'grid' ? <Table className="h-4 w-4" /> : <ScrollText className="h-4 w-4" />}
+            </Toggle>
+            
+            <Toggle
+              pressed={theme === 'bright'}
+              onPressedChange={() => setTheme(theme === 'dark' ? 'bright' : 'dark')}
+              size="sm"
+              aria-label={theme === 'dark' ? 'Switch to bright theme' : 'Switch to dark theme'}
+              className="p-1 h-7"
+            >
+              {theme === 'dark' ? 'B' : 'D'}
+            </Toggle>
+          </div>
         </div>
         
         <div className="flex-1 overflow-hidden">
@@ -271,12 +303,13 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                         className={`${getBackdropColor()} backdrop-blur-sm p-2 rounded-lg flex flex-col items-center`} 
                         style={{ 
                           width: '100%', 
-                          maxWidth: isMobile ? '90px' : '120px',
-                          minWidth: isMobile ? '60px' : '80px',
+                          maxWidth: isMobile ? '75px' : '90px', // Smaller size
+                          minWidth: isMobile ? '50px' : '65px',
                           margin: '0 auto'
                         }}
                       >
-                        <div className="w-full aspect-square mb-1 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0">
+                        <div className="w-full aspect-square mb-1 rounded-lg overflow-hidden bg-muted/30 flex-shrink-0"
+                             style={{ maxHeight: isMobile ? '45px' : '55px' }}> {/* Control the height */}
                           {project.logo ? (
                             <img 
                               src={project.logo} 
@@ -284,32 +317,37 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                               className="object-cover w-full h-full"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-indigo-700">
+                            <div className="w-full h-full flex items-center justify-center bg-indigo-700 text-xs">
                               {project.name.charAt(0)}
                             </div>
                           )}
                         </div>
-                        <h3 className={`font-medium text-xs ${getTextColor()} text-center truncate w-full`}>{project.name}</h3>
+                        <h3 className={`font-medium text-xs ${getTextColor()} text-center truncate w-full`}
+                            style={{ fontSize: isMobile ? '8px' : '10px' }}>{project.name}</h3> {/* Smaller font */}
                         
                         <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
                           {displayOptions.investment && (
-                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
+                                 style={{ fontSize: '8px' }}> {/* Smaller font */}
                               Inv.: ${formatCompactNumber(project.investedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.earning && (
-                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
+                                 style={{ fontSize: '8px' }}> {/* Smaller font */}
                               Earn.: ${formatCompactNumber(project.earnedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.expected && (
-                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
+                                 style={{ fontSize: '8px' }}> {/* Smaller font */}
                               Exp.: ${formatCompactNumber(project.expectedAmount || 0)}
                             </div>
                           )}
                           {displayOptions.stats && project.stats && project.stats.length > 0 && (
                             project.stats.map((stat, index) => (
-                              <div key={index} className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}>
+                              <div key={index} className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
+                                   style={{ fontSize: '8px' }}> {/* Smaller font */}
                                 {stat.type}: {formatCompactNumber(stat.amount)}
                               </div>
                             ))
