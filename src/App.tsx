@@ -10,6 +10,7 @@ import Explore from "./pages/Explore";
 import Todo from "./pages/Todo";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import { useState, useEffect } from "react";
@@ -32,6 +33,7 @@ function AppContent() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

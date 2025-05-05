@@ -1,9 +1,35 @@
+
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Admin Panel</title>
+    <title>DropDeck Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/netlify-cms@^2.10.0/dist/netlify-cms.js"></script>
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #111;
+        color: #fff;
+      }
+      .nc-appHeader-container {
+        background-color: #1a1a1a !important;
+      }
+      .nc-appHeader-content {
+        background-color: #1a1a1a !important;
+      }
+      .nc-appHeader-button {
+        background-color: #333 !important;
+        color: white !important;
+      }
+      .nc-entryListing-cardImage {
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+      }
+    </style>
   </head>
   <body>
     <script>
@@ -15,6 +41,38 @@
         .then(config => {
           const yaml = window.jsyaml.load(config);
           window.CMS.init({ config: yaml });
+          
+          // Apply custom styling to match the main site theme
+          const style = document.createElement('style');
+          style.innerHTML = `
+            .nc-app-content {
+              background-color: #111;
+              color: white;
+            }
+            .nc-controlPane-control {
+              background-color: #222;
+              border: 1px solid #444;
+            }
+            .nc-entryEditor-content {
+              background-color: #222;
+            }
+            .nc-entryEditor-container {
+              background-color: #222;
+            }
+            input, textarea {
+              background-color: #333 !important;
+              color: white !important;
+              border: 1px solid #555 !important;
+            }
+            .nc-collectionPage-sidebarHeading {
+              color: white !important;
+            }
+            .nc-collectionPage-sidebar {
+              background-color: #1a1a1a;
+              border-right: 1px solid #444;
+            }
+          `;
+          document.head.appendChild(style);
         });
     </script>
   </body>
