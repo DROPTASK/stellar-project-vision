@@ -20,12 +20,13 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const { theme } = useTheme();
+  const isAdmin = window.location.pathname.includes('/admin');
   
   return (
     <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
       <Toaster />
       <Sonner />
-      <Header />
+      {!isAdmin && <Header />}
       <main>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -37,7 +38,7 @@ function AppContent() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <BottomNav />
+      {!isAdmin && <BottomNav />}
     </div>
   );
 }

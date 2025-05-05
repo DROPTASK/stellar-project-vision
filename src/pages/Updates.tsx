@@ -6,27 +6,41 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useTheme } from '../components/theme-provider';
 import { ExternalLink, MessageSquare } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 const Updates: React.FC = () => {
   const { theme } = useTheme();
 
-  // This would come from the CMS in production
-  const updates = [
-    {
-      id: 1,
-      title: 'New Platform Features',
-      image: '/placeholder.svg', 
-      description: 'We\'ve added new features to help you track projects more efficiently. Check out the new dashboard layout and improved filtering options.',
-      date: '2025-05-01'
+  // Fetch updates from CMS
+  const { data: updates = [] } = useQuery({
+    queryKey: ['updates'],
+    queryFn: async () => {
+      try {
+        const response = await fetch('/content/updates.json');
+        if (!response.ok) return [];
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching updates:', error);
+        return [];
+      }
     },
-    {
-      id: 2,
-      title: 'Explore Tab Improvements',
-      image: '/placeholder.svg',
-      description: 'The Explore tab now shows more detailed information about each project, including funding status and reward potential.',
-      date: '2025-04-15'
-    }
-  ];
+    initialData: [
+      {
+        id: 1,
+        title: 'New Platform Features',
+        image: '/placeholder.svg', 
+        description: 'We\'ve added new features to help you track projects more efficiently. Check out the new dashboard layout and improved filtering options.',
+        date: '2025-05-01'
+      },
+      {
+        id: 2,
+        title: 'Explore Tab Improvements',
+        image: '/placeholder.svg',
+        description: 'The Explore tab now shows more detailed information about each project, including funding status and reward potential.',
+        date: '2025-04-15'
+      }
+    ]
+  });
 
   return (
     <div className="container mx-auto px-4 pb-24">

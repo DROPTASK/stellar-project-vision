@@ -29,6 +29,23 @@
         background-repeat: no-repeat !important;
         background-position: center !important;
       }
+      .custom-cms-tabs {
+        display: flex;
+        background: #1a1a1a;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #444;
+        width: 100%;
+      }
+      .custom-cms-tabs .tab-item {
+        padding: 10px 20px;
+        cursor: pointer;
+        color: #aaa;
+      }
+      .custom-cms-tabs .tab-item.active {
+        border-bottom: 2px solid white;
+        color: #fff;
+      }
     </style>
   </head>
   <body>
@@ -42,6 +59,21 @@
           const yaml = window.jsyaml.load(config);
           
           // Add password protection
+          const checkPassword = function() {
+            const password = prompt("Please enter password to access the CMS:");
+            if (password !== "DEepu1234@&") {
+              alert("Incorrect password. Access denied.");
+              setTimeout(checkPassword, 100);
+              return false;
+            }
+            return true;
+          };
+          
+          if (!checkPassword()) {
+            return;
+          }
+          
+          // Configure backend
           if (yaml.backend) {
             yaml.backend.base_url = window.location.origin;
           }
@@ -49,18 +81,19 @@
           window.CMS.init({ 
             config: yaml,
             onLogin: function() {
-              // Show custom tabs UI after login
-              const nav = document.createElement('div');
-              nav.className = 'custom-cms-tabs';
-              nav.innerHTML = `
-                <div style="display: flex; background: #1a1a1a; padding: 10px; margin-bottom: 20px; border-bottom: 1px solid #444;">
-                  <div class="tab-item active" data-collection="projects" style="padding: 10px 20px; cursor: pointer; font-weight: 600;">Projects</div>
-                  <div class="tab-item" data-collection="updates" style="padding: 10px 20px; cursor: pointer;">Updates</div>
-                </div>
-              `;
+              // Remove bottom navigator and add custom tabs UI
+              document.body.classList.add('cms-authenticated');
               
+              // Create and add custom tabs
               setTimeout(() => {
-                const mainContent = document.querySelector('.css-1gj57a0-SidebarContainer');
+                const nav = document.createElement('div');
+                nav.className = 'custom-cms-tabs';
+                nav.innerHTML = `
+                  <div class="tab-item active" data-collection="projects">Projects</div>
+                  <div class="tab-item" data-collection="updates">Updates</div>
+                `;
+                
+                const mainContent = document.querySelector('.css-1f7nhiq-CollectionTopContainer');
                 if (mainContent && !document.querySelector('.custom-cms-tabs')) {
                   mainContent.prepend(nav);
                   
@@ -72,7 +105,7 @@
                       
                       // Find and click the corresponding collection in the sidebar
                       const collectionName = this.getAttribute('data-collection');
-                      const sidebarLink = document.querySelector(`.sidebar-link[href="#/collections/${collectionName}"]`);
+                      const sidebarLink = document.querySelector(`a[href="#/collections/${collectionName}"]`);
                       if (sidebarLink) {
                         sidebarLink.click();
                       }
@@ -80,21 +113,17 @@
                   });
                 }
               }, 1000);
+              
+              // Hide bottom navigator in CMS
+              const style = document.createElement('style');
+              style.textContent = `
+                .nc-appHeader-content-navList {
+                  display: none !important;
+                }
+              `;
+              document.head.appendChild(style);
             }
           });
-          
-          // Password protection
-          const checkPassword = function() {
-            const password = prompt("Please enter password to access the CMS:");
-            if (password !== "DEepu1234@&") {
-              alert("Incorrect password. Access denied.");
-              setTimeout(checkPassword, 100);
-              return false;
-            }
-            return true;
-          };
-          
-          checkPassword();
           
           // Apply custom styling to match the main site theme
           const style = document.createElement('style');
@@ -125,18 +154,31 @@
               background-color: #1a1a1a;
               border-right: 1px solid #444;
             }
-            .custom-cms-tabs .tab-item.active {
-              border-bottom: 2px solid white;
-              color: #fff;
+            body.cms-authenticated .nc-appHeader {
+              position: relative !important;
             }
-            .custom-cms-tabs .tab-item {
-              color: #aaa;
+            .nc-collectionPage-container {
+              background-color: #111;
             }
-            .nc-appHeader-content-navList {
-              display: none !important;
+            .nc-entryListing-container {
+              background-color: #222;
+            }
+            .nc-entryListing-card {
+              background-color: #333;
+              border: 1px solid #444;
+            }
+            .nc-entryEditor-toolbar {
+              background-color: #222;
             }
           `;
           document.head.appendChild(style);
+        })
+        .catch(error => {
+          console.error("Error initializing CMS:", error);
+          document.body.innerHTML = `<div style="padding: 20px; color: white; text-align: center;">
+            <h1>Error loading CMS</h1>
+            <p>${error.message}</p>
+          </div>`;
         });
     </script>
   </body>

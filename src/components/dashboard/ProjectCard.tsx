@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Project } from '../../types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,9 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const { updateProject, removeProject } = useAppStore();
-  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [showRemoveButton, setShowRemoveButton] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   
   const editForm = useForm({
     defaultValues: {
@@ -40,12 +42,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   };
 
   const handleRemove = () => {
-    removeProject(project.id);
-    toast.success(`${project.name} removed from your projects`);
+    setIsRemoving(true);
+    setTimeout(() => {
+      removeProject(project.id);
+      toast.success(`${project.name} removed from your projects`);
+    }, 2000);
   };
 
   return (
-    <div className="project-card flex justify-between">
+    <div 
+      className={`project-card flex justify-between ${isRemoving ? 'animate-fade-out' : ''}`}
+      onClick={() => setShowRemoveButton(true)}
+      onMouseLeave={() => setShowRemoveButton(false)}
+    >
       <div className="flex flex-col justify-between">
         <h3 className="font-semibold text-lg text-left">{project.name}</h3>
         <div className="grid grid-cols-3 gap-2 mt-2">
@@ -95,7 +104,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-full hover:bg-destructive/10"
+            className={`h-8 w-8 rounded-full hover:bg-destructive/10 transition-opacity duration-300 ${showRemoveButton ? 'opacity-100' : 'opacity-0'}`}
             onClick={handleRemove}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
