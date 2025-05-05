@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Project } from '../../types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -22,7 +21,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showRemoveButton, setShowRemoveButton] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-  
+
   const editForm = useForm({
     defaultValues: {
       expectedAmount: project.expectedAmount || 0,
@@ -85,7 +84,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           </div>
         )}
       </div>
-      
+
       <div className="flex flex-col items-end justify-between">
         <div className="flex items-center gap-2">
           <div className="h-12 w-12 rounded-full overflow-hidden bg-muted">
@@ -110,13 +109,55 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
-        
+
         <div className="flex flex-col items-end gap-1">
           <div className="flex items-center gap-2">
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs">Edit Stats</Button>
               </DialogTrigger>
+              <DialogContent className="glass-card border-accent/50">
+                <DialogHeader>
+                  <DialogTitle className="font-display">Edit {project.name} Stats</DialogTitle>
+                </DialogHeader>
+
+                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="expectedAmount">Expected Amount</Label>
+                    <Input 
+                      id="expectedAmount" 
+                      type="number" 
+                      className="bg-muted/50"
+                      step="any"
+                      {...editForm.register('expectedAmount')}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="points">Points</Label>
+                    <Input 
+                      id="points" 
+                      type="number" 
+                      className="bg-muted/50"
+                      step="any"
+                      {...editForm.register('points')}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="note">Achievement/Note</Label>
+                    <Textarea 
+                      id="note" 
+                      className="bg-muted/50"
+                      placeholder="Enter achievements or notes here"
+                      {...editForm.register('note')}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full btn-gradient">Save Changes</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
             <Button
               variant="ghost"
               size="sm"
@@ -126,48 +167,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
               Remove
             </Button>
           </div>
-            <DialogContent className="glass-card border-accent/50">
-              <DialogHeader>
-                <DialogTitle className="font-display">Edit {project.name} Stats</DialogTitle>
-              </DialogHeader>
-              
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="expectedAmount">Expected Amount</Label>
-                  <Input 
-                    id="expectedAmount" 
-                    type="number" 
-                    className="bg-muted/50"
-                    step="any"
-                    {...editForm.register('expectedAmount')}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="points">Points</Label>
-                  <Input 
-                    id="points" 
-                    type="number" 
-                    className="bg-muted/50"
-                    step="any"
-                    {...editForm.register('points')}
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="note">Achievement/Note</Label>
-                  <Textarea 
-                    id="note" 
-                    className="bg-muted/50"
-                    placeholder="Enter achievements or notes here"
-                    {...editForm.register('note')}
-                  />
-                </div>
-                
-                <Button type="submit" className="w-full btn-gradient">Save Changes</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
     </div>
