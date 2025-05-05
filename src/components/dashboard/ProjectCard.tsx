@@ -112,10 +112,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         </div>
         
         <div className="flex flex-col items-end gap-1">
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-xs">Edit Stats</Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-xs">Edit Stats</Button>
+              </DialogTrigger>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-destructive hover:text-destructive"
+              onClick={handleRemove}
+            >
+              Remove
+            </Button>
+          </div>
             <DialogContent className="glass-card border-accent/50">
               <DialogHeader>
                 <DialogTitle className="font-display">Edit {project.name} Stats</DialogTitle>
