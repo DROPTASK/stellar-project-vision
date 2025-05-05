@@ -84,7 +84,13 @@
             onLogin: function() {
               // Remove bottom navigator and add custom tabs UI
               document.body.classList.add('cms-authenticated');
-              
+              window.addEventListener('load', () => {
+  if (!window.CMS) {
+    console.error("Netlify CMS failed to load.");
+    return;
+  }
+  window.CMS.init({ config: yaml });
+});
               // Create and add custom tabs
               setTimeout(() => {
                 const nav = document.createElement('div');
