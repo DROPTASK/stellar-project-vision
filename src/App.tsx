@@ -33,8 +33,7 @@ function AppContent() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/updates" element={<Updates />} />
-          <Route path="/admin" element={<Navigate to="/admin/" replace />} />
-          <Route path="/admin/*" element={<Admin />} /> {/* Let the admin page handle its own routing */}
+          <Route path="/admin/*" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

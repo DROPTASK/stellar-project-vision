@@ -4,28 +4,33 @@
   <head>
     <meta charset="UTF-8" />
     <title>DropDeck Admin</title>
-    <base href="/admin/" />
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
     <style>
       body {
         font-family: 'Poppins', sans-serif;
         background-color: #111;
         color: #fff;
+        margin: 0;
       }
+      
       .nc-appHeader-container {
         background-color: #1a1a1a !important;
       }
+      
       .nc-appHeader-content {
         background-color: #1a1a1a !important;
       }
+      
       .nc-appHeader-button {
         background-color: #333 !important;
         color: white !important;
       }
+      
       .nc-entryListing-cardImage {
         background-size: contain !important;
         background-repeat: no-repeat !important;
@@ -35,48 +40,35 @@
   </head>
   <body>
     <script>
-      window.CMS_MANUAL_INIT = true;
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", user => {
+          if (!user) {
+            window.netlifyIdentity.on("login", () => {
+              document.location.href = "/admin/";
+            });
+          }
+        });
+      }
 
       // Initialize CMS
-      window.initCMS = async () => {
+      window.addEventListener('load', async function() {
         try {
           const response = await fetch('/admin/config.yml');
           const config = await response.text();
           const yaml = jsyaml.load(config);
-
-          // Add password protection
-          const checkPassword = function() {
-            const password = prompt("Please enter password to access the CMS:");
-            if (password !== "DEepu1234@&") {
-              alert("Incorrect password. Access denied.");
-              setTimeout(checkPassword, 100);
-              return false;
-            }
-            return true;
-          };
-
-          if (!checkPassword()) {
-            return;
-          }
-
-          // Configure backend
-          if (yaml.backend) {
-            yaml.backend.base_url = window.location.origin;
-          }
-
+          
           // Initialize CMS with config
-          await CMS.init({ config: yaml });
+          window.CMS.init({ config: yaml });
         } catch (error) {
           console.error("Error initializing CMS:", error);
-          document.body.innerHTML = `<div style="padding: 20px; color: white; text-align: center;">
-            <h1>Error loading CMS</h1>
-            <p>${error.message}</p>
-          </div>`;
+          document.body.innerHTML = `
+            <div style="padding: 20px; color: white; text-align: center;">
+              <h1>Error loading CMS</h1>
+              <p>${error.message}</p>
+            </div>
+          `;
         }
-      };
-
-      // Initialize when DOM is ready
-      document.addEventListener('DOMContentLoaded', initCMS);
+      });
     </script>
   </body>
 </html>
