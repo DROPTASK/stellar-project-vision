@@ -1,8 +1,10 @@
+
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <title>DropDeck Admin</title>
+    <base href="/admin/" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,31 +31,17 @@
         background-repeat: no-repeat !important;
         background-position: center !important;
       }
-      .custom-cms-tabs {
-        display: flex;
-        background: #1a1a1a;
-        padding: 10px;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #444;
-        width: 100%;
-      }
-      .custom-cms-tabs .tab-item {
-        padding: 10px 20px;
-        cursor: pointer;
-        color: #aaa;
-      }
-      .custom-cms-tabs .tab-item.active {
-        border-bottom: 2px solid white;
-        color: #fff;
-      }
     </style>
   </head>
   <body>
     <script>
-      // Initialize CMS directly without manual init flag
-      fetch('/admin/config.yml')
-        .then(response => response.text())
-        .then(config => {
+      window.CMS_MANUAL_INIT = true;
+
+      // Initialize CMS
+      window.initCMS = async () => {
+        try {
+          const response = await fetch('/admin/config.yml');
+          const config = await response.text();
           const yaml = jsyaml.load(config);
 
           // Add password protection
@@ -77,15 +65,18 @@
           }
 
           // Initialize CMS with config
-          CMS.init({ config: yaml });
-        })
-        .catch(error => {
+          await CMS.init({ config: yaml });
+        } catch (error) {
           console.error("Error initializing CMS:", error);
           document.body.innerHTML = `<div style="padding: 20px; color: white; text-align: center;">
             <h1>Error loading CMS</h1>
             <p>${error.message}</p>
           </div>`;
-        });
+        }
+      };
+
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', initCMS);
     </script>
   </body>
 </html>

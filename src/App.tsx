@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Investment from "./pages/Investment";
 import Explore from "./pages/Explore";
@@ -21,7 +20,7 @@ const queryClient = new QueryClient();
 function AppContent() {
   const { theme } = useTheme();
   const isAdmin = window.location.pathname.includes('/admin');
-  
+
   return (
     <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
       <Toaster />
@@ -34,7 +33,8 @@ function AppContent() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/updates" element={<Updates />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<Navigate to="/admin/" replace />} />
+          <Route path="/admin/*" element={<Admin />} /> {/* Let the admin page handle its own routing */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
