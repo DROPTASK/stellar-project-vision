@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -51,14 +50,12 @@
   </head>
   <body>
     <script>
-      window.CMS_MANUAL_INIT = true;
-    </script>
-    <script>
+      // Initialize CMS directly without manual init flag
       fetch('/admin/config.yml')
         .then(response => response.text())
         .then(config => {
-          const yaml = window.jsyaml.load(config);
-          
+          const yaml = jsyaml.load(config);
+
           // Add password protection
           const checkPassword = function() {
             const password = prompt("Please enter password to access the CMS:");
@@ -69,116 +66,18 @@
             }
             return true;
           };
-          
+
           if (!checkPassword()) {
             return;
           }
-          
+
           // Configure backend
           if (yaml.backend) {
             yaml.backend.base_url = window.location.origin;
           }
-          
-          window.CMS.init({ 
-            config: yaml,
-            onLogin: function() {
-              // Remove bottom navigator and add custom tabs UI
-              document.body.classList.add('cms-authenticated');
-              window.addEventListener('load', () => {
-  if (!window.CMS) {
-    console.error("Netlify CMS failed to load.");
-    return;
-  }
-  window.CMS.init({ config: yaml });
-});
-              // Create and add custom tabs
-              setTimeout(() => {
-                const nav = document.createElement('div');
-                nav.className = 'custom-cms-tabs';
-                nav.innerHTML = `
-                  <div class="tab-item active" data-collection="projects">Projects</div>
-                  <div class="tab-item" data-collection="updates">Updates</div>
-                `;
-                
-                const mainContent = document.querySelector('.css-1f7nhiq-CollectionTopContainer');
-                if (mainContent && !document.querySelector('.custom-cms-tabs')) {
-                  mainContent.prepend(nav);
-                  
-                  // Add tab functionality
-                  document.querySelectorAll('.tab-item').forEach(tab => {
-                    tab.addEventListener('click', function() {
-                      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                      this.classList.add('active');
-                      
-                      // Find and click the corresponding collection in the sidebar
-                      const collectionName = this.getAttribute('data-collection');
-                      const sidebarLink = document.querySelector(`a[href="#/collections/${collectionName}"]`);
-                      if (sidebarLink) {
-                        sidebarLink.click();
-                      }
-                    });
-                  });
-                }
-              }, 1000);
-              
-              // Hide bottom navigator in CMS
-              const style = document.createElement('style');
-              style.textContent = `
-                .nc-appHeader-content-navList {
-                  display: none !important;
-                }
-              `;
-              document.head.appendChild(style);
-            }
-          });
-          
-          // Apply custom styling to match the main site theme
-          const style = document.createElement('style');
-          style.innerHTML = `
-            .nc-app-content {
-              background-color: #111;
-              color: white;
-            }
-            .nc-controlPane-control {
-              background-color: #222;
-              border: 1px solid #444;
-            }
-            .nc-entryEditor-content {
-              background-color: #222;
-            }
-            .nc-entryEditor-container {
-              background-color: #222;
-            }
-            input, textarea {
-              background-color: #333 !important;
-              color: white !important;
-              border: 1px solid #555 !important;
-            }
-            .nc-collectionPage-sidebarHeading {
-              color: white !important;
-            }
-            .nc-collectionPage-sidebar {
-              background-color: #1a1a1a;
-              border-right: 1px solid #444;
-            }
-            body.cms-authenticated .nc-appHeader {
-              position: relative !important;
-            }
-            .nc-collectionPage-container {
-              background-color: #111;
-            }
-            .nc-entryListing-container {
-              background-color: #222;
-            }
-            .nc-entryListing-card {
-              background-color: #333;
-              border: 1px solid #444;
-            }
-            .nc-entryEditor-toolbar {
-              background-color: #222;
-            }
-          `;
-          document.head.appendChild(style);
+
+          // Initialize CMS with config
+          CMS.init({ config: yaml });
         })
         .catch(error => {
           console.error("Error initializing CMS:", error);
