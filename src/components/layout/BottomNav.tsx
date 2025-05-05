@@ -8,7 +8,7 @@ const navItems = [
   { path: '/investment', icon: <WalletCards size={18} />, text: 'Invest' },
   { path: '/explore', icon: <Compass size={18} />, text: 'Explore' },
   { path: '/todo', icon: <CheckSquare size={18} />, text: 'Todo' },
-  { path: '/support', icon: <HelpCircle size={18} />, text: 'Help' },
+  { path: '/updates', icon: <HelpCircle size={18} />, text: 'Help' },
 ];
 
 export default function BottomNav() {
