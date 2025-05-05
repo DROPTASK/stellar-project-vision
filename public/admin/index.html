@@ -40,7 +40,61 @@
         .then(response => response.text())
         .then(config => {
           const yaml = window.jsyaml.load(config);
-          window.CMS.init({ config: yaml });
+          
+          // Add password protection
+          if (yaml.backend) {
+            yaml.backend.base_url = window.location.origin;
+          }
+          
+          window.CMS.init({ 
+            config: yaml,
+            onLogin: function() {
+              // Show custom tabs UI after login
+              const nav = document.createElement('div');
+              nav.className = 'custom-cms-tabs';
+              nav.innerHTML = `
+                <div style="display: flex; background: #1a1a1a; padding: 10px; margin-bottom: 20px; border-bottom: 1px solid #444;">
+                  <div class="tab-item active" data-collection="projects" style="padding: 10px 20px; cursor: pointer; font-weight: 600;">Projects</div>
+                  <div class="tab-item" data-collection="updates" style="padding: 10px 20px; cursor: pointer;">Updates</div>
+                </div>
+              `;
+              
+              setTimeout(() => {
+                const mainContent = document.querySelector('.css-1gj57a0-SidebarContainer');
+                if (mainContent && !document.querySelector('.custom-cms-tabs')) {
+                  mainContent.prepend(nav);
+                  
+                  // Add tab functionality
+                  document.querySelectorAll('.tab-item').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                      this.classList.add('active');
+                      
+                      // Find and click the corresponding collection in the sidebar
+                      const collectionName = this.getAttribute('data-collection');
+                      const sidebarLink = document.querySelector(`.sidebar-link[href="#/collections/${collectionName}"]`);
+                      if (sidebarLink) {
+                        sidebarLink.click();
+                      }
+                    });
+                  });
+                }
+              }, 1000);
+            }
+          });
+          
+          // Password protection
+          const checkPassword = function() {
+            const password = prompt("Please enter password to access the CMS:");
+            if (password !== "DEepu1234@&") {
+              alert("Incorrect password. Access denied.");
+              setTimeout(checkPassword, 100);
+              return false;
+            }
+            return true;
+          };
+          
+          checkPassword();
           
           // Apply custom styling to match the main site theme
           const style = document.createElement('style');
@@ -70,6 +124,16 @@
             .nc-collectionPage-sidebar {
               background-color: #1a1a1a;
               border-right: 1px solid #444;
+            }
+            .custom-cms-tabs .tab-item.active {
+              border-bottom: 2px solid white;
+              color: #fff;
+            }
+            .custom-cms-tabs .tab-item {
+              color: #aaa;
+            }
+            .nc-appHeader-content-navList {
+              display: none !important;
             }
           `;
           document.head.appendChild(style);

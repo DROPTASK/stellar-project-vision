@@ -8,7 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Investment from "./pages/Investment";
 import Explore from "./pages/Explore";
 import Todo from "./pages/Todo";
-import Support from "./pages/Support";
+import Updates from "./pages/Updates";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Header from "./components/layout/Header";
@@ -32,7 +32,7 @@ function AppContent() {
           <Route path="/investment" element={<Investment />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/todo" element={<Todo />} />
-          <Route path="/support" element={<Support />} />
+          <Route path="/updates" element={<Updates />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

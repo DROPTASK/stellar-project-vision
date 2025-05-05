@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import ProjectDetail from './ProjectDetail';
 import { useTheme } from '../theme-provider';
+import { ExternalLink } from 'lucide-react';
 
 interface ProjectCardProps {
   project: ExploreProject;
@@ -72,7 +73,23 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <p className="text-sm line-clamp-2">{project.description || 'No description available'}</p>
       </div>
       
-      <div className="mt-4 flex justify-end items-center">
+      <div className="mt-4 flex justify-end items-center gap-2">
+        {project.joinUrl && (
+          <a 
+            href={project.joinUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <Button 
+              variant="default" 
+              className="bg-primary"
+              size="sm"
+            >
+              <ExternalLink className="h-4 w-4 mr-1" /> Join
+            </Button>
+          </a>
+        )}
+        
         <Dialog>
           <DialogTrigger asChild>
             <Button 

@@ -91,16 +91,21 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project }) => {
           <p className="text-sm">{project.description || 'No description available'}</p>
         </div>
         
-        {project.hydraLink && (
+        {project.joinUrl && (
           <div className="mt-2">
             <a 
-              href={project.hydraLink} 
+              href={project.joinUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center text-primary hover:underline text-sm"
+              className="inline-flex items-center"
             >
-              <ExternalLink size={14} className="mr-1" />
-              View in Hydra Channel
+              <Button 
+                variant="default" 
+                className="bg-primary"
+                size="sm"
+              >
+                <ExternalLink className="h-4 w-4 mr-1" /> Join Project
+              </Button>
             </a>
           </div>
         )}

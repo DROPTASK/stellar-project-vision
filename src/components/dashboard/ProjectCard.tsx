@@ -11,13 +11,14 @@ import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { formatCompactNumber } from '../../lib/utils';
 import { Textarea } from '@/components/ui/textarea';
+import { Trash2 } from 'lucide-react';
 
 interface ProjectCardProps {
   project: Project;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const { updateProject } = useAppStore();
+  const { updateProject, removeProject } = useAppStore();
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   
   const editForm = useForm({
@@ -36,6 +37,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     });
     setIsEditDialogOpen(false);
     toast.success('Project stats updated');
+  };
+
+  const handleRemove = () => {
+    removeProject(project.id);
+    toast.success(`${project.name} removed from your projects`);
   };
 
   return (
@@ -72,18 +78,28 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       </div>
       
       <div className="flex flex-col items-end justify-between">
-        <div className="h-12 w-12 rounded-full overflow-hidden bg-muted">
-          {project.logo ? (
-            <img 
-              src={project.logo} 
-              alt={`${project.name} logo`}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-primary">
-              {project.name.charAt(0)}
-            </div>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="h-12 w-12 rounded-full overflow-hidden bg-muted">
+            {project.logo ? (
+              <img 
+                src={project.logo} 
+                alt={`${project.name} logo`}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-primary">
+                {project.name.charAt(0)}
+              </div>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full hover:bg-destructive/10"
+            onClick={handleRemove}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
         </div>
         
         <div className="flex flex-col items-end gap-1">

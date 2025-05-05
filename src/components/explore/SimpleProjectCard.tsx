@@ -64,6 +64,23 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
         </div>
         
         <div className="flex items-center gap-1 sm:gap-2">
+          {project.joinUrl && (
+            <a 
+              href={project.joinUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button 
+                variant="default"
+                size="sm" 
+                className="text-xs h-8 px-1 sm:px-2 bg-primary"
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                <span className="hidden sm:inline">Join</span>
+              </Button>
+            </a>
+          )}
+          
           <Button 
             variant={theme === "bright" ? "paper" : "outline"}
             size="sm"

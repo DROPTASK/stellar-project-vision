@@ -4,7 +4,7 @@ backend:
   repo: DROPTASK/stellar-project-vision
   branch: main
   auth_type: implicit
-  app_id: null # Replace with your GitHub OAuth app ID if needed
+  app_id: Ov23livgq8XYw1O7cXq3
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
@@ -24,3 +24,14 @@ collections:
       - { label: "Reward", name: "reward", widget: "string", required: false }
       - { label: "TGE", name: "tge", widget: "string", required: false }
       - { label: "Description", name: "description", widget: "text", required: false }
+      - { label: "Join URL", name: "joinUrl", widget: "string", required: false }
+  - name: "updates"
+    label: "Updates"
+    folder: "content/updates"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Image", name: "image", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "markdown" }
+      - { label: "Date", name: "date", widget: "datetime" }
