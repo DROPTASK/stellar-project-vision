@@ -104,7 +104,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           <Button
             variant="ghost"
             size="icon"
-            className={`h-8 w-8 rounded-full hover:bg-destructive/10 transition-opacity duration-300 ${showRemoveButton ? 'opacity-100' : 'opacity-0'}`}
+            className="h-8 w-8 rounded-full hover:bg-destructive/10"
             onClick={handleRemove}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
