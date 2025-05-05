@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageCircle, Mail, ExternalLink } from 'lucide-react';
+import { MessageCircle, Mail, ExternalLink, Telegram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Support: React.FC = () => {
@@ -14,6 +14,24 @@ const Support: React.FC = () => {
             <CardDescription>Contact the developer for assistance</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="flex items-center">
+              <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center mr-4">
+                <Telegram className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-medium">Join Telegram Community</h3>
+                <p className="text-sm text-muted-foreground">@cryptoairdrops_07</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="ml-auto"
+                onClick={() => window.open('https://t.me/cryptoairdrops_07', '_blank')}
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+
             <div className="flex items-center">
               <div className="h-10 w-10 rounded-full bg-gradient-primary flex items-center justify-center mr-4">
                 <MessageCircle className="h-5 w-5" />

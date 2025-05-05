@@ -37,7 +37,7 @@ const Investment: React.FC = () => {
         <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-center text-lg sm:text-xl">
-              Total Investment: ${totalInvestment.toLocaleString()}
+              Total Investment: <span className="text-xl md:text-2xl font-bold">${totalInvestment.toLocaleString()}</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -45,7 +45,7 @@ const Investment: React.FC = () => {
         <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-center text-lg sm:text-xl">
-              Total Earnings: ${totalEarning.toLocaleString()}
+              Total Earnings: <span className="text-xl md:text-2xl font-bold">${totalEarning.toLocaleString()}</span>
             </CardTitle>
           </CardHeader>
         </Card>

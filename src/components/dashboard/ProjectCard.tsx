@@ -7,48 +7,35 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { useAppStore } from '../../store/appStore';
-import { PlusCircle } from 'lucide-react';
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';
 import { toast } from 'sonner';
 import { formatCompactNumber } from '../../lib/utils';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ProjectCardProps {
   project: Project;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
-  const { updateProject, addProjectStat } = useAppStore();
+  const { updateProject } = useAppStore();
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
-  const [isAddStatsDialogOpen, setIsAddStatsDialogOpen] = React.useState(false);
   
   const editForm = useForm({
     defaultValues: {
       expectedAmount: project.expectedAmount || 0,
+      points: project.points || 0,
+      note: project.note || '',
     },
   });
 
-  const statsForm = useForm({
-    defaultValues: {
-      amount: 0,
-      type: '',
-    },
-  });
-
-  const onEditSubmit = (data: { expectedAmount: number }) => {
+  const onEditSubmit = (data: { expectedAmount: number; points: number; note: string }) => {
     updateProject(project.id, {
       expectedAmount: parseFloat(data.expectedAmount.toString()),
+      points: parseFloat(data.points.toString()),
+      note: data.note,
     });
     setIsEditDialogOpen(false);
     toast.success('Project stats updated');
-  };
-
-  const onAddStatSubmit = (data: { amount: number; type: string }) => {
-    addProjectStat(project.id, {
-      amount: parseFloat(data.amount.toString()),
-      type: data.type
-    });
-    statsForm.reset();
-    toast.success('Stat added to project');
   };
 
   return (
@@ -70,22 +57,22 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           </div>
         </div>
 
-        {project.stats && project.stats.length > 0 && (
-          <div className="mt-3">
-            <p className="text-xs text-muted-foreground mb-1">Custom Stats:</p>
-            <div className="flex flex-wrap gap-1">
-              {project.stats.map((stat, index) => (
-                <div key={index} className="bg-muted/30 text-xs px-2 py-0.5 rounded-full">
-                  {formatCompactNumber(stat.amount)} {stat.type}
-                </div>
-              ))}
-            </div>
+        {project.points && project.points > 0 && (
+          <div className="mt-2">
+            <p className="text-xs text-muted-foreground">Points: {formatCompactNumber(project.points)}</p>
+          </div>
+        )}
+
+        {project.note && (
+          <div className="mt-2">
+            <p className="text-xs text-muted-foreground mb-1">Note:</p>
+            <p className="text-xs">{project.note}</p>
           </div>
         )}
       </div>
       
       <div className="flex flex-col items-end justify-between">
-        <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted">
+        <div className="h-12 w-12 rounded-full overflow-hidden bg-muted">
           {project.logo ? (
             <img 
               src={project.logo} 
@@ -102,11 +89,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <div className="flex flex-col items-end gap-1">
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-xs">Edit Expected</Button>
+              <Button variant="ghost" size="sm" className="text-xs">Edit Stats</Button>
             </DialogTrigger>
             <DialogContent className="glass-card border-accent/50">
               <DialogHeader>
-                <DialogTitle className="font-display">Edit {project.name} Expected Return</DialogTitle>
+                <DialogTitle className="font-display">Edit {project.name} Stats</DialogTitle>
               </DialogHeader>
               
               <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
@@ -120,79 +107,30 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
                     {...editForm.register('expectedAmount')}
                   />
                 </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="points">Points</Label>
+                  <Input 
+                    id="points" 
+                    type="number" 
+                    className="bg-muted/50"
+                    step="any"
+                    {...editForm.register('points')}
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="note">Achievement/Note</Label>
+                  <Textarea 
+                    id="note" 
+                    className="bg-muted/50"
+                    placeholder="Enter achievements or notes here"
+                    {...editForm.register('note')}
+                  />
+                </div>
                 
                 <Button type="submit" className="w-full btn-gradient">Save Changes</Button>
               </form>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isAddStatsDialogOpen} onOpenChange={setIsAddStatsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                <PlusCircle className="h-3 w-3 mr-1" />
-                Add Stats
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="glass-card border-accent/50">
-              <DialogHeader>
-                <DialogTitle className="font-display">Add Stats to {project.name}</DialogTitle>
-              </DialogHeader>
-              
-              <Form {...statsForm}>
-                <form onSubmit={statsForm.handleSubmit(onAddStatSubmit)} className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <FormField
-                      control={statsForm.control}
-                      name="amount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Label htmlFor="amount">Amount</Label>
-                          <FormControl>
-                            <Input 
-                              id="amount" 
-                              type="number" 
-                              className="bg-muted/50"
-                              step="any"
-                              placeholder="98"
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={statsForm.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Label htmlFor="type">Type</Label>
-                          <FormControl>
-                            <Input 
-                              id="type" 
-                              type="text" 
-                              className="bg-muted/50"
-                              placeholder="days"
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="bg-muted/30 p-2 rounded-lg text-xs text-muted-foreground">
-                    <p className="font-medium mb-1">Examples:</p>
-                    <ul className="space-y-1">
-                      <li>• For Grass: amount 120, type days</li>
-                      <li>• For Bless: amount 98, type days</li>
-                      <li>• For Nexus: amount 45, type tasks</li>
-                    </ul>
-                  </div>
-                  
-                  <Button type="submit" className="w-full btn-gradient">Add Stat</Button>
-                </form>
-              </Form>
             </DialogContent>
           </Dialog>
         </div>

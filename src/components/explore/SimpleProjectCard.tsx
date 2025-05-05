@@ -41,7 +41,7 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
     <>
       <div className="flex justify-between items-center p-3 glass-card my-2">
         <div className="flex items-center">
-          <div className="h-9 w-9 rounded-md overflow-hidden bg-muted/30 flex-shrink-0">
+          <div className="h-9 w-9 rounded-full overflow-hidden bg-muted/30 flex-shrink-0">
             {project.logo ? (
               <img 
                 src={project.logo} 
@@ -95,10 +95,9 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
             </p>
             <Button 
               className="w-full mt-4 btn-gradient" 
-              onClick={() => window.open('https://t.me/Ezzy_Looters', '_blank')}
+              onClick={() => setIsDetailDialogOpen(false)}
             >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              View in Hydra Channel
+              Close
             </Button>
           </div>
         </DialogContent>

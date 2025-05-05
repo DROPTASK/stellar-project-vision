@@ -24,7 +24,8 @@ interface DisplayOptions {
   investment: boolean;
   earning: boolean;
   expected: boolean;
-  stats: boolean;
+  points: boolean;
+  note: boolean;
 }
 
 const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
@@ -36,7 +37,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
     investment: true,
     earning: true,
     expected: true,
-    stats: true,
+    points: true,
+    note: false,
   });
   
   // Use global theme instead of local state
@@ -103,10 +105,12 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
         text += `- *Exp.: $${formatCompactNumber(project.expectedAmount || 0)}*\n`;
       }
       
-      if (displayOptions.stats && project.stats && project.stats.length > 0) {
-        project.stats.forEach(stat => {
-          text += `- *${stat.type}: ${formatCompactNumber(stat.amount)}*\n`;
-        });
+      if (displayOptions.points && project.points) {
+        text += `- *Points: ${formatCompactNumber(project.points)}*\n`;
+      }
+      
+      if (displayOptions.note && project.note) {
+        text += `- *Note: ${project.note}*\n`;
       }
       
       text += "\n";
@@ -222,10 +226,16 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                   Expected
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem 
-                  checked={displayOptions.stats}
-                  onCheckedChange={() => toggleDisplayOption('stats')}
+                  checked={displayOptions.points}
+                  onCheckedChange={() => toggleDisplayOption('points')}
                 >
-                  Custom Stats
+                  Points
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem 
+                  checked={displayOptions.note}
+                  onCheckedChange={() => toggleDisplayOption('note')}
+                >
+                  Notes
                 </DropdownMenuCheckboxItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -314,13 +324,17 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                               Exp: ${formatCompactNumber(project.expectedAmount || 0)}
                             </div>
                           )}
-                          {displayOptions.stats && project.stats && project.stats.length > 0 && (
-                            project.stats.map((stat, index) => (
-                              <div key={index} className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
-                                   style={{ fontSize: '7px' }}>
-                                {stat.type}: {formatCompactNumber(stat.amount)}
-                              </div>
-                            ))
+                          {displayOptions.points && project.points && (
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
+                                 style={{ fontSize: '7px' }}>
+                              Points: {formatCompactNumber(project.points)}
+                            </div>
+                          )}
+                          {displayOptions.note && project.note && (
+                            <div className={`text-xs ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'} truncate w-full text-center`}
+                                 style={{ fontSize: '7px' }}>
+                              Note: {project.note}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -335,7 +349,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                           {displayOptions.investment && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Inv</TableHead>}
                           {displayOptions.earning && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Earn</TableHead>}
                           {displayOptions.expected && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Exp</TableHead>}
-                          {displayOptions.stats && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Stats</TableHead>}
+                          {displayOptions.points && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '80px', textAlign: 'right' }}>Points</TableHead>}
+                          {displayOptions.note && <TableHead className={theme === 'dark' ? 'text-white' : 'text-gray-800'} style={{ width: '100px', textAlign: 'right' }}>Note</TableHead>}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -376,19 +391,19 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ isOpen, onClose }) => {
                               </TableCell>
                             )}
                             
-                            {displayOptions.stats && (
+                            {displayOptions.points && (
                               <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
-                                {project.stats && project.stats.length > 0 ? (
-                                  <div className="flex flex-col items-end">
-                                    {project.stats.map((stat, idx) => (
-                                      <div key={idx} className="text-xs">
-                                        {stat.type}: {formatCompactNumber(stat.amount)}
-                                      </div>
-                                    ))}
+                                {project.points ? formatCompactNumber(project.points) : "-"}
+                              </TableCell>
+                            )}
+                            
+                            {displayOptions.note && (
+                              <TableCell className={theme === 'dark' ? 'text-white/90 text-right text-xs' : 'text-gray-700 text-right text-xs'}>
+                                {project.note ? (
+                                  <div className="text-xs truncate max-w-[150px]" title={project.note}>
+                                    {project.note}
                                   </div>
-                                ) : (
-                                  "-"
-                                )}
+                                ) : "-"}
                               </TableCell>
                             )}
                           </TableRow>
