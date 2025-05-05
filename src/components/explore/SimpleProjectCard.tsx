@@ -6,6 +6,7 @@ import { useAppStore } from '../../store/appStore';
 import { PlusCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useTheme } from '../theme-provider';
 
 interface SimpleProjectCardProps {
   project: ExploreProject;
@@ -14,6 +15,7 @@ interface SimpleProjectCardProps {
 const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
   const { addProjectFromExplore } = useAppStore();
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const { theme } = useTheme();
   
   const handleAddProject = () => {
     addProjectFromExplore(project.id, {});
@@ -63,7 +65,7 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
         
         <div className="flex items-center gap-1 sm:gap-2">
           <Button 
-            variant="outline"
+            variant={theme === "bright" ? "paper" : "outline"}
             size="sm"
             className="text-xs h-8 px-1 sm:px-2"
             onClick={() => setIsDetailDialogOpen(true)}
@@ -84,7 +86,7 @@ const SimpleProjectCard: React.FC<SimpleProjectCardProps> = ({ project }) => {
       </div>
 
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="glass-card border-accent/50">
+        <DialogContent className={`glass-card ${theme === "bright" ? "border-black/40" : "border-accent/50"}`}>
           <DialogHeader>
             <DialogTitle className="font-display">{project.name} Details</DialogTitle>
           </DialogHeader>

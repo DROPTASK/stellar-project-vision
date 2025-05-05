@@ -13,9 +13,32 @@ import NotFound from "./pages/NotFound";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import { useState, useEffect } from "react";
-import { ThemeProvider } from "./components/theme-provider";
+import { ThemeProvider, useTheme } from "./components/theme-provider";
 
 const queryClient = new QueryClient();
+
+function AppContent() {
+  const { theme } = useTheme();
+  
+  return (
+    <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
+      <Toaster />
+      <Sonner />
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/investment" element={<Investment />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/todo" element={<Todo />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <BottomNav />
+    </div>
+  );
+}
 
 const App = () => {
   return (
@@ -23,22 +46,7 @@ const App = () => {
       <BrowserRouter>
         <ThemeProvider>
           <TooltipProvider>
-            <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
-              <Toaster />
-              <Sonner />
-              <Header />
-              <main>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/investment" element={<Investment />} />
-                  <Route path="/explore" element={<Explore />} />
-                  <Route path="/todo" element={<Todo />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <BottomNav />
-            </div>
+            <AppContent />
           </TooltipProvider>
         </ThemeProvider>
       </BrowserRouter>

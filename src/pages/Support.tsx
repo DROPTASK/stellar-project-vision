@@ -3,12 +3,15 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle, Mail, ExternalLink, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/components/theme-provider';
 
 const Support: React.FC = () => {
+  const { theme } = useTheme();
+  
   return (
     <div className="container mx-auto px-4 pb-24">
       <div className="mt-6">
-        <Card className="glass-card">
+        <Card className={theme === "bright" ? "border-[1.5px] border-black/40" : "glass-card"}>
           <CardHeader>
             <CardTitle className="font-display">Need Help?</CardTitle>
             <CardDescription>Contact the developer for assistance</CardDescription>
@@ -23,7 +26,7 @@ const Support: React.FC = () => {
                 <p className="text-sm text-muted-foreground">@cryptoairdrops_07</p>
               </div>
               <Button 
-                variant="ghost" 
+                variant={theme === "bright" ? "iconOutline" : "ghost"}
                 size="icon"
                 className="ml-auto"
                 onClick={() => window.open('https://t.me/cryptoairdrops_07', '_blank')}
@@ -41,7 +44,7 @@ const Support: React.FC = () => {
                 <p className="text-sm text-muted-foreground">@milkyway_king</p>
               </div>
               <Button 
-                variant="ghost" 
+                variant={theme === "bright" ? "iconOutline" : "ghost"}
                 size="icon"
                 className="ml-auto"
                 onClick={() => window.open('https://t.me/milkyway_king', '_blank')}
@@ -59,7 +62,7 @@ const Support: React.FC = () => {
                 <p className="text-sm text-muted-foreground">vanshadd001@gmail.com</p>
               </div>
               <Button 
-                variant="ghost" 
+                variant={theme === "bright" ? "iconOutline" : "ghost"}
                 size="icon"
                 className="ml-auto"
                 onClick={() => window.location.href = 'mailto:vanshadd001@gmail.com'}
@@ -70,7 +73,7 @@ const Support: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="glass-card mt-6">
+        <Card className={`${theme === "bright" ? "border-[1.5px] border-black/40" : "glass-card"} mt-6`}>
           <CardHeader>
             <CardTitle className="font-display">About</CardTitle>
             <CardDescription>Crypto Project Tracker</CardDescription>
@@ -87,6 +90,18 @@ const Support: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* New Join Telegram Button */}
+        <div className="flex justify-center mt-6">
+          <Button 
+            variant={theme === "bright" ? "paper" : "default"} 
+            size="lg" 
+            className="w-full sm:w-auto"
+            onClick={() => window.open('https://t.me/cryptoairdrops_07', '_blank')}
+          >
+            <MessageCircle className="mr-2" /> Join Our Telegram Community
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -34,6 +34,9 @@ const Explore: React.FC = () => {
       processed.tge = `🗓 ${processed.tge}`;
     }
     
+    // Remove hydra link - no longer needed
+    delete processed.hydraLink;
+    
     return processed;
   });
   

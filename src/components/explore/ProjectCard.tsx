@@ -4,13 +4,15 @@ import { ExploreProject } from '../../types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import ProjectDetail from './ProjectDetail';
-import { ExternalLink } from 'lucide-react';
+import { useTheme } from '../theme-provider';
 
 interface ProjectCardProps {
   project: ExploreProject;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+  const { theme } = useTheme();
+  
   return (
     <div className="project-card">
       <div className="flex justify-between">
@@ -35,7 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           </div>
         </div>
         
-        <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted">
+        <div className="h-12 w-12 rounded-full overflow-hidden bg-muted">
           {project.logo ? (
             <img 
               src={project.logo} 
@@ -70,30 +72,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <p className="text-sm line-clamp-2">{project.description || 'No description available'}</p>
       </div>
       
-      <div className="mt-4 flex justify-between items-center">
-        {project.hydraLink && (
-          <a 
-            href={project.hydraLink} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-primary hover:underline flex items-center text-xs"
-          >
-            <ExternalLink size={14} className="mr-1" />
-            View in Hydra
-          </a>
-        )}
-        
+      <div className="mt-4 flex justify-end items-center">
         <Dialog>
           <DialogTrigger asChild>
             <Button 
-              variant="outline" 
+              variant={theme === "bright" ? "paper" : "outline"}
               size="sm" 
-              className={project.hydraLink ? "" : "ml-auto"}
             >
               View Details
             </Button>
           </DialogTrigger>
-          <DialogContent className="glass-card border-accent/50 max-h-[90vh]">
+          <DialogContent className={`glass-card ${theme === "bright" ? "border-black/40" : "border-accent/50"} max-h-[90vh]`}>
             <DialogHeader>
               <DialogTitle className="font-display">{project.name}</DialogTitle>
             </DialogHeader>

@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Michroma&family=Orbitron:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,14 +7,14 @@
 
 @layer base {
   :root {
-    /* Bright theme colors (anime-inspired) */
-    --background: 210 40% 98%;
+    /* Bright theme colors (more aesthetic) */
+    --background: 20 10% 96%;
     --foreground: 222 47% 11%;
 
-    --card: 210 40% 98%;
+    --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
 
-    --popover: 210 40% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
     --primary: 252 87% 59%;
@@ -32,29 +32,29 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214.3 31.8% 80%;
+    --input: 214.3 31.8% 80%;
     --ring: 252 87% 59%;
 
-    --sidebar-background: 210 40% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 142.1 70.6% 45.3%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 210 40% 96.1%;
     --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-border: 214.3 31.8% 80%;
     --sidebar-ring: 142.4 71.8% 29.2%;
   }
 
-  /* Dark theme with lighter tone */
+  /* Dark theme with lighter texture */
   :root:not(.bright-theme) {
-    --background: 240 10% 9%; /* Lighter than before */
+    --background: 240 10% 12%;
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 9%; /* Lighter than before */
+    --card: 240 10% 14%; 
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 10% 9%; /* Lighter than before */
+    --popover: 240 10% 14%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 252 87% 59%;
@@ -63,8 +63,8 @@
     --secondary: 250 95% 76%;
     --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 240 3.7% 20%; /* Lighter than before */
-    --muted-foreground: 240 5% 74.9%; /* Lighter than before */
+    --muted: 240 3.7% 20%;
+    --muted-foreground: 240 5% 80%;
 
     --accent: 191 97% 77%;
     --accent-foreground: 240 5.9% 10%;
@@ -72,31 +72,31 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 20%; /* Lighter than before */
-    --input: 240 3.7% 20%; /* Lighter than before */
+    --border: 240 3.7% 25%;
+    --input: 240 3.7% 25%;
     --ring: 142.4 71.8% 29.2%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 240 10% 9%; /* Lighter than before */
+    --sidebar-background: 240 10% 12%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 142.1 70.6% 45.3%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 20%; /* Lighter than before */
+    --sidebar-accent: 240 3.7% 20%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 20%; /* Lighter than before */
+    --sidebar-border: 240 3.7% 25%;
     --sidebar-ring: 142.4 71.8% 29.2%;
   }
 
-  /* Bright theme (anime-inspired) */
+  /* Bright theme (more aesthetic) */
   .bright-theme {
-    --background: 210 40% 98%;
+    --background: 20 10% 96%;
     --foreground: 222 47% 11%;
 
-    --card: 210 40% 98%;
+    --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
 
-    --popover: 210 40% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
     --primary: 252 87% 59%;
@@ -114,17 +114,17 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214.3 31.8% 80%;
+    --input: 214.3 31.8% 80%;
     --ring: 252 87% 59%;
 
-    --sidebar-background: 210 40% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 142.1 70.6% 45.3%;
     --sidebar-primary-foreground: 210 40% 98%;
     --sidebar-accent: 210 40% 96.1%;
     --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-border: 214.3 31.8% 80%;
     --sidebar-ring: 142.4 71.8% 29.2%;
   }
 }
@@ -139,14 +139,14 @@
 }
 
 @layer components {
-  /* Modified glass-card for darker theme */
+  /* Glass card for darker theme */
   .glass-card {
     @apply bg-black/30 backdrop-blur-md border border-white/10 rounded-xl;
   }
   
-  /* Anime-inspired card for bright theme */
+  /* Paper-like card for bright theme */
   .bright-theme .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-primary/10 rounded-2xl shadow-md;
+    @apply bg-white/90 backdrop-blur-sm border-[1.5px] border-black/40 rounded-xl shadow-sm;
   }
   
   .blue-glow {
@@ -154,16 +154,16 @@
   }
   
   .bright-theme .blue-glow {
-    @apply shadow-[0_0_15px_rgba(111,149,255,0.5)];
+    @apply shadow-[0_0_8px_rgba(0,0,0,0.15)];
   }
   
   .btn-gradient {
     @apply bg-gradient-primary text-white font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-all;
   }
   
-  /* Anime-style button for bright theme */
+  /* Paper-style button for bright theme */
   .bright-theme .btn-gradient {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium py-2 px-4 rounded-xl shadow-md hover:shadow-lg transition-all;
+    @apply bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium py-2 px-4 rounded-xl shadow-sm hover:shadow-md transition-all border border-black/10;
   }
   
   .tag {
@@ -198,12 +198,54 @@
     @apply glass-card p-4 my-3 transition-all duration-300 hover:blue-glow;
   }
   
-  /* Anime-inspired UI elements for bright theme */
+  /* Paper-like UI elements for bright theme */
   .bright-theme .project-card {
-    @apply bg-white/80 rounded-2xl border border-primary/10 p-4 my-3 shadow-md transition-all duration-300 hover:shadow-lg;
+    @apply bg-white/95 rounded-xl border-[1.5px] border-black/40 p-4 my-3 shadow-sm transition-all duration-300 hover:shadow-md;
   }
   
   .bright-theme .metric-card {
-    @apply bg-gradient-to-br from-white to-blue-50 rounded-2xl border border-primary/10 p-4 shadow-sm;
+    @apply bg-gradient-to-br from-white to-white/95 rounded-xl border-[1.5px] border-black/40 p-4 shadow-sm;
   }
+
+  /* Dollar amount styling */
+  .dollar-amount {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  /* Dark theme background with texture */
+  .dark-bg-texture {
+    @apply bg-dark-texture bg-background;
+  }
+
+  /* Bright theme background with texture */
+  .bright-bg-texture {
+    @apply bg-paper-texture bg-background;
+  }
+}
+
+/* Apply textures to backgrounds */
+body:not(.bright-theme) {
+  @apply bg-dark-texture;
+}
+
+.bright-theme {
+  @apply bg-paper-texture;
+}
+
+/* Custom scrollbar for the app */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/50;
 }
