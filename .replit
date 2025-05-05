@@ -6,3 +6,15 @@ channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "npm run dev"]
+
+[workflows]
+runButton = "Githubpush"
+
+[[workflows.workflow]]
+name = "Githubpush"
+mode = "sequential"
+author = 42124438
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "git push origin main"
