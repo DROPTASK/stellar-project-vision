@@ -2,10 +2,18 @@
 {
   "updates": [
     {
-      "id": 0,
+      "id": 1,
       "title": "ARI WALLET QUIZ ANSWER",
       "image": "/ari.img",
+      "description": "Learn about the latest updates to the ARI wallet and how to use it effectively.",
       "date": "2024-01-20"
+    },
+    {
+      "id": 2,
+      "title": "Platform Update 2.0",
+      "image": "/placeholder.svg",
+      "description": "We've made significant improvements to the platform, including better performance and new features.",
+      "date": "2024-05-01"
     }
   ]
 }

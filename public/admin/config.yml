@@ -9,6 +9,9 @@ backend:
 media_folder: "public/uploads"
 public_folder: "/uploads"
 
+publish_mode: editorial_workflow
+display_url: https://stellar-project-vision.netlify.app
+
 collections:
   - name: "projects"
     label: "Explore Projects"
@@ -25,6 +28,7 @@ collections:
       - { label: "TGE", name: "tge", widget: "string", required: false }
       - { label: "Description", name: "description", widget: "text", required: false }
       - { label: "Join URL", name: "joinUrl", widget: "string", required: false }
+  
   - name: "updates"
     label: "Updates"
     folder: "content/updates"

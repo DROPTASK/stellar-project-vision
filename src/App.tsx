@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,11 +16,27 @@ import BottomNav from "./components/layout/BottomNav";
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
 
+// Create QueryClient outside component to ensure it's not recreated on renders
 const queryClient = new QueryClient();
 
 function AppContent() {
   const { theme } = useTheme();
   const isAdmin = window.location.pathname.includes('/admin');
+
+  // Ensure the app has the correct paths when deployed
+  useEffect(() => {
+    // Handle base path issues in production
+    const path = window.location.pathname;
+    if (path === '/' || path === '') return;
+    
+    // Make sure routes are properly recognized
+    const validPaths = ['/investment', '/explore', '/todo', '/updates', '/admin'];
+    const isValidPath = validPaths.some(validPath => path.startsWith(validPath));
+    
+    if (!isValidPath && !path.includes('.')) {
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   return (
     <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
