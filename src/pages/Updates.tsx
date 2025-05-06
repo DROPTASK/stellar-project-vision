@@ -8,39 +8,57 @@ import { useTheme } from '../components/theme-provider';
 import { ExternalLink, MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
+// Define a type for our update items
+interface UpdateItem {
+  id: number;
+  title: string;
+  image: string;
+  description: string;
+  date: string;
+}
+
+interface UpdatesResponse {
+  updates: UpdateItem[];
+}
+
 const Updates: React.FC = () => {
   const { theme } = useTheme();
 
   // Fetch updates from CMS
-  const { data: updates = [] } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['updates'],
     queryFn: async () => {
       try {
         const response = await fetch('/content/updates.json');
-        if (!response.ok) return [];
-        return await response.json();
+        if (!response.ok) return { updates: [] };
+        const data: UpdatesResponse = await response.json();
+        return data;
       } catch (error) {
         console.error('Error fetching updates:', error);
-        return [];
+        return { updates: [] };
       }
     },
-    initialData: [
-      {
-        id: 1,
-        title: 'New Platform Features',
-        image: '/placeholder.svg', 
-        description: 'We\'ve added new features to help you track projects more efficiently. Check out the new dashboard layout and improved filtering options.',
-        date: '2025-05-01'
-      },
-      {
-        id: 2,
-        title: 'Explore Tab Improvements',
-        image: '/placeholder.svg',
-        description: 'The Explore tab now shows more detailed information about each project, including funding status and reward potential.',
-        date: '2025-04-15'
-      }
-    ]
+    initialData: {
+      updates: [
+        {
+          id: 1,
+          title: 'New Platform Features',
+          image: '/placeholder.svg', 
+          description: 'We\'ve added new features to help you track projects more efficiently. Check out the new dashboard layout and improved filtering options.',
+          date: '2025-05-01'
+        },
+        {
+          id: 2,
+          title: 'Explore Tab Improvements',
+          image: '/placeholder.svg',
+          description: 'The Explore tab now shows more detailed information about each project, including funding status and reward potential.',
+          date: '2025-04-15'
+        }
+      ]
+    }
   });
+
+  const updatesList = data?.updates || [];
 
   return (
     <div className="container mx-auto px-4 pb-24">
@@ -51,7 +69,7 @@ const Updates: React.FC = () => {
 
         <ScrollArea className="h-[calc(100vh-200px)]">
           <div className="space-y-6">
-            {updates.map((update) => (
+            {updatesList.map((update) => (
               <Card 
                 key={update.id} 
                 className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}
