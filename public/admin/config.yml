@@ -11,6 +11,7 @@ public_folder: "/uploads"
 
 publish_mode: editorial_workflow
 display_url: https://stellar-project-vision.netlify.app
+site_url: https://stellar-project-vision.netlify.app
 
 collections:
   - name: "projects"

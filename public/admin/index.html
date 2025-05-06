@@ -4,12 +4,14 @@
   <head>
     <meta charset="UTF-8" />
     <title>DropDeck Admin</title>
+    <!-- Add meta viewport for better mobile experience -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Load Netlify Identity widget first -->
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <!-- Load js-yaml before CMS -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4/dist/js-yaml.min.js"></script>
-    <!-- Load Netlify CMS -->
-    <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
+    <!-- Load Netlify CMS explicitly with version -->
+    <script src="https://unpkg.com/netlify-cms@^2.10.192/dist/netlify-cms.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -162,34 +164,34 @@
         document.getElementById('admin-root').innerHTML = '';
         document.getElementById('admin-root').innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
         
-        // Wait to make sure all scripts have loaded
-        setTimeout(async function() {
+        // Make sure scripts are loaded before initializing
+        function checkScriptsLoaded() {
+          if (typeof window.CMS !== 'undefined' && typeof jsyaml !== 'undefined') {
+            loadCMS();
+          } else {
+            setTimeout(checkScriptsLoaded, 100); // Check again after 100ms
+          }
+        }
+        
+        async function loadCMS() {
           try {
-            if (typeof window.CMS === 'undefined') {
-              throw new Error('CMS is not defined. Check that the script loaded properly.');
-            }
-            
             const response = await fetch('/admin/config.yml');
             if (!response.ok) {
               throw new Error('Failed to load config file: ' + response.status);
             }
             
-            const config = await response.text();
-            if (!config) {
+            const configText = await response.text();
+            if (!configText) {
               throw new Error('Config file is empty');
             }
             
-            if (typeof jsyaml === 'undefined') {
-              throw new Error('js-yaml is not defined. Check that the script loaded properly.');
-            }
-            
-            const yaml = jsyaml.load(config);
-            if (!yaml) {
+            const config = jsyaml.load(configText);
+            if (!config) {
               throw new Error('Failed to parse config file');
             }
             
             // Initialize CMS with config
-            window.CMS.init({ config: yaml });
+            window.CMS.init({ config: config });
             
             // Handle Netlify Identity
             if (window.netlifyIdentity) {
@@ -211,11 +213,14 @@
               </div>
             `;
           }
-        }, 1000);
+        }
+        
+        // Start checking if scripts are loaded
+        checkScriptsLoaded();
       }
 
       // Check if user is already authenticated
-      window.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function() {
         const authenticated = localStorage.getItem('cmsAuthenticated') === 'true';
         if (authenticated) {
           isAuthenticated = true;

@@ -13,8 +13,20 @@ import { Check, Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Navigate, useLocation } from 'react-router-dom';
 
 const Admin: React.FC = () => {
+  const location = useLocation();
+
+  // Redirect to admin CMS page
+  useEffect(() => {
+    // If we're directly on /admin, redirect to the admin interface
+    if (location.pathname === '/admin') {
+      window.location.href = '/admin/index.html';
+      return;
+    }
+  }, [location.pathname]);
+
   // No bottom navigation logic needed here as it's already handled in App.tsx
   return (
     <div className="container mx-auto px-4 pb-24">
