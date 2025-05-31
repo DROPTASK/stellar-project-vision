@@ -7,58 +7,65 @@ import { Separator } from '@/components/ui/separator';
 import { useTheme } from '../components/theme-provider';
 import { ExternalLink, MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define a type for our update items
 interface UpdateItem {
-  id: number;
+  id: string;
   title: string;
-  image: string;
-  description: string;
+  image: string | null;
+  description: string | null;
   date: string;
-}
-
-interface UpdatesResponse {
-  updates: UpdateItem[];
 }
 
 const Updates: React.FC = () => {
   const { theme } = useTheme();
 
-  // Fetch updates from CMS
-  const { data, isLoading, error } = useQuery({
+  // Fetch updates from Supabase
+  const { data: updates = [], isLoading, error } = useQuery({
     queryKey: ['updates'],
     queryFn: async () => {
-      try {
-        const response = await fetch('/content/updates.json');
-        if (!response.ok) return { updates: [] };
-        const data: UpdatesResponse = await response.json();
-        return data;
-      } catch (error) {
+      console.log('Fetching updates from Supabase...');
+      const { data, error } = await supabase
+        .from('updates')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) {
         console.error('Error fetching updates:', error);
-        return { updates: [] };
+        throw error;
       }
-    },
-    initialData: {
-      updates: [
-        {
-          id: 1,
-          title: 'New Platform Features',
-          image: '/placeholder.svg', 
-          description: 'We\'ve added new features to help you track projects more efficiently. Check out the new dashboard layout and improved filtering options.',
-          date: '2025-05-01'
-        },
-        {
-          id: 2,
-          title: 'Explore Tab Improvements',
-          image: '/placeholder.svg',
-          description: 'The Explore tab now shows more detailed information about each project, including funding status and reward potential.',
-          date: '2025-04-15'
-        }
-      ]
+
+      console.log('Fetched updates:', data);
+      return data as UpdateItem[];
     }
   });
 
-  const updatesList = data?.updates || [];
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 pb-24">
+        <div className="mt-6 mb-6">
+          <h1 className="text-2xl font-display font-bold mb-4">Updates</h1>
+          <div className="flex items-center justify-center h-64">
+            <p>Loading updates...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 pb-24">
+        <div className="mt-6 mb-6">
+          <h1 className="text-2xl font-display font-bold mb-4">Updates</h1>
+          <div className="flex items-center justify-center h-64">
+            <p className="text-red-500">Error loading updates. Please try again later.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 pb-24">
@@ -69,27 +76,40 @@ const Updates: React.FC = () => {
 
         <ScrollArea className="h-[calc(100vh-200px)]">
           <div className="space-y-6">
-            {updatesList.map((update) => (
-              <Card 
-                key={update.id} 
-                className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}
-              >
-                <CardHeader>
-                  <CardTitle className="font-display">{update.title}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{new Date(update.date).toLocaleDateString()}</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="w-full h-48 rounded-lg overflow-hidden">
-                    <img 
-                      src={update.image} 
-                      alt={update.title}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <p>{update.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+            {updates.length > 0 ? (
+              updates.map((update) => (
+                <Card 
+                  key={update.id} 
+                  className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}
+                >
+                  <CardHeader>
+                    <CardTitle className="font-display">{update.title}</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(update.date).toLocaleDateString()}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {update.image && (
+                      <div className="w-full h-48 rounded-lg overflow-hidden">
+                        <img 
+                          src={update.image} 
+                          alt={update.title}
+                          className="object-cover w-full h-full"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                        />
+                      </div>
+                    )}
+                    <p>{update.description || 'No description available'}</p>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No updates available yet.</p>
+              </div>
+            )}
           </div>
 
           <Separator className="my-8" />
