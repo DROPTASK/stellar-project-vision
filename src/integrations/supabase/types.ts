@@ -54,6 +54,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          expected_return: number | null
+          id: string
+          password_hash: string
+          total_earnings: number | null
+          total_investment: number | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          expected_return?: number | null
+          id?: string
+          password_hash: string
+          total_earnings?: number | null
+          total_investment?: number | null
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          expected_return?: number | null
+          id?: string
+          password_hash?: string
+          total_earnings?: number | null
+          total_investment?: number | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       updates: {
         Row: {
           created_at: string
@@ -83,6 +116,152 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_projects: {
+        Row: {
+          created_at: string
+          earned_amount: number | null
+          expected_amount: number | null
+          id: string
+          invested_amount: number | null
+          is_testnet: boolean | null
+          logo: string | null
+          name: string
+          note: string | null
+          points: number | null
+          type: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          earned_amount?: number | null
+          expected_amount?: number | null
+          id?: string
+          invested_amount?: number | null
+          is_testnet?: boolean | null
+          logo?: string | null
+          name: string
+          note?: string | null
+          points?: number | null
+          type?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          earned_amount?: number | null
+          expected_amount?: number | null
+          id?: string
+          invested_amount?: number | null
+          is_testnet?: boolean | null
+          logo?: string | null
+          name?: string
+          note?: string | null
+          points?: number | null
+          type?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_todos: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          id: string
+          project_id: string | null
+          text: string
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          text: string
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          text?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_todos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "user_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_todos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          project_id: string | null
+          project_logo: string | null
+          project_name: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          project_logo?: string | null
+          project_name: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          project_logo?: string | null
+          project_name?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_transactions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "user_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -11,10 +11,13 @@ import Todo from "./pages/Todo";
 import Updates from "./pages/Updates";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Auth from "./pages/Auth";
+import Leaderboard from "./pages/Leaderboard";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Create QueryClient outside component to ensure it's not recreated on renders
 const queryClient = new QueryClient();
@@ -35,8 +38,10 @@ function AppContent() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/updates" element={<Updates />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/admin/*" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       {!isAdmin && <BottomNav />}
@@ -50,7 +55,9 @@ const App = () => {
       <BrowserRouter basename="/">
         <ThemeProvider>
           <TooltipProvider>
-            <AppContent />
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
           </TooltipProvider>
         </ThemeProvider>
       </BrowserRouter>

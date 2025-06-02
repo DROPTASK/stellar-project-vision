@@ -36,15 +36,37 @@ interface DatabaseUpdate {
 
 const Admin: React.FC = () => {
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Redirect to admin CMS page
   useEffect(() => {
-    // If we're directly on /admin, redirect to the admin interface
+    // Simulate loading and then show admin interface
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // If we're directly on /admin, redirect to the admin interface
+  useEffect(() => {
     if (location.pathname === '/admin') {
       window.location.href = '/admin/index.html';
       return;
     }
   }, [location.pathname]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 pb-24">
+        <div className="mt-6 mb-6 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto mb-4"></div>
+            <p>Loading admin panel...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 pb-24">
@@ -77,14 +99,16 @@ const ProjectsAdminTab: React.FC = () => {
   const queryClient = useQueryClient();
   const [editMode, setEditMode] = useState<{ [key: string]: boolean }>({});
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
-  const [newTag, setNewTag] = useState('');
-  const [newProject, setNewProject] = useState<Partial<DatabaseProject>>({
+  const [newProject, setNewProject] = useState<Omit<DatabaseProject, 'id'>>({
     name: '',
     logo: '',
     tags: [],
     description: '',
     join_url: '',
-    order_index: 0
+    order_index: 0,
+    funding: null,
+    reward: null,
+    tge: null
   });
 
   // Fetch projects from Supabase
@@ -103,7 +127,7 @@ const ProjectsAdminTab: React.FC = () => {
 
   // Mutations for CRUD operations
   const createProjectMutation = useMutation({
-    mutationFn: async (project: Partial<DatabaseProject>) => {
+    mutationFn: async (project: Omit<DatabaseProject, 'id'>) => {
       const { data, error } = await supabase
         .from('explore_projects')
         .insert([project])
@@ -124,7 +148,7 @@ const ProjectsAdminTab: React.FC = () => {
   });
 
   const updateProjectMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<DatabaseProject> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: DatabaseProject) => {
       const { data, error } = await supabase
         .from('explore_projects')
         .update(updates)
@@ -180,7 +204,10 @@ const ProjectsAdminTab: React.FC = () => {
         tags: [],
         description: '',
         join_url: '',
-        order_index: 0
+        order_index: 0,
+        funding: null,
+        reward: null,
+        tge: null
       });
       setShowNewProjectForm(false);
     } else {
@@ -419,7 +446,7 @@ const UpdatesAdminTab: React.FC = () => {
   const queryClient = useQueryClient();
   const [editMode, setEditMode] = useState<{ [key: string]: boolean }>({});
   const [showNewUpdateForm, setShowNewUpdateForm] = useState(false);
-  const [newUpdate, setNewUpdate] = useState<Partial<DatabaseUpdate>>({
+  const [newUpdate, setNewUpdate] = useState<Omit<DatabaseUpdate, 'id'>>({
     title: '',
     image: '',
     description: '',
@@ -442,7 +469,7 @@ const UpdatesAdminTab: React.FC = () => {
 
   // Mutations for CRUD operations
   const createUpdateMutation = useMutation({
-    mutationFn: async (update: Partial<DatabaseUpdate>) => {
+    mutationFn: async (update: Omit<DatabaseUpdate, 'id'>) => {
       const { data, error } = await supabase
         .from('updates')
         .insert([update])
@@ -463,7 +490,7 @@ const UpdatesAdminTab: React.FC = () => {
   });
 
   const updateUpdateMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<DatabaseUpdate> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: DatabaseUpdate) => {
       const { data, error } = await supabase
         .from('updates')
         .update(updates)
