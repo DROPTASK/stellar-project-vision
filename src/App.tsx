@@ -9,13 +9,13 @@ import Investment from "./pages/Investment";
 import Explore from "./pages/Explore";
 import Todo from "./pages/Todo";
 import Updates from "./pages/Updates";
-import NotFound from "./pages/NotFound";
-import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import Conversation from "./pages/Conversation";
 import Leaderboard from "./pages/Leaderboard";
+import Admin from "./pages/Admin";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
-import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -24,13 +24,12 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const { theme } = useTheme();
-  const isAdmin = window.location.pathname.includes('/admin');
 
   return (
     <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
       <Toaster />
       <Sonner />
-      {!isAdmin && <Header />}
+      <Header />
       <main>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -39,12 +38,15 @@ function AppContent() {
           <Route path="/todo" element={<Todo />} />
           <Route path="/updates" element={<Updates />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/conversation" element={<Conversation />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/admin/*" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {!isAdmin && <BottomNav />}
+      <BottomNav />
     </div>
   );
 }
@@ -52,7 +54,7 @@ function AppContent() {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/">
+      <BrowserRouter>
         <ThemeProvider>
           <TooltipProvider>
             <AuthProvider>

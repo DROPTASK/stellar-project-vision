@@ -54,36 +54,101 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          message_type: string | null
+          project_data: Json | null
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          project_data?: Json | null
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          project_data?: Json | null
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
+          description: string | null
           expected_return: number | null
           id: string
+          level: number | null
+          name: string | null
           password_hash: string
+          profile_picture: string | null
+          role: string | null
+          social_discord: string | null
+          social_telegram: string | null
+          social_x: string | null
           total_earnings: number | null
           total_investment: number | null
           updated_at: string
           username: string
+          xp: number | null
         }
         Insert: {
           created_at?: string
+          description?: string | null
           expected_return?: number | null
           id?: string
+          level?: number | null
+          name?: string | null
           password_hash: string
+          profile_picture?: string | null
+          role?: string | null
+          social_discord?: string | null
+          social_telegram?: string | null
+          social_x?: string | null
           total_earnings?: number | null
           total_investment?: number | null
           updated_at?: string
           username: string
+          xp?: number | null
         }
         Update: {
           created_at?: string
+          description?: string | null
           expected_return?: number | null
           id?: string
+          level?: number | null
+          name?: string | null
           password_hash?: string
+          profile_picture?: string | null
+          role?: string | null
+          social_discord?: string | null
+          social_telegram?: string | null
+          social_x?: string | null
           total_earnings?: number | null
           total_investment?: number | null
           updated_at?: string
           username?: string
+          xp?: number | null
         }
         Relationships: []
       }
@@ -116,6 +181,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_project_shares: {
+        Row: {
+          id: string
+          share_count: number | null
+          shared_date: string
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          share_count?: number | null
+          shared_date?: string
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          share_count?: number | null
+          shared_date?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_project_shares_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_projects: {
         Row: {
@@ -268,7 +362,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_level: {
+        Args: { total_xp: number }
+        Returns: number
+      }
+      update_user_xp: {
+        Args: { p_user_id: string; p_xp_gain: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

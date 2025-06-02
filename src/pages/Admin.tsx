@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { useTheme } from '../components/theme-provider';
-import { Check, Edit, Plus, Save, Trash2 } from 'lucide-react';
+import { Check, Edit, Plus, Save, Trash2, Users, MessageSquare } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation } from 'react-router-dom';
@@ -32,6 +32,32 @@ interface DatabaseUpdate {
   image: string | null;
   description: string | null;
   date: string;
+}
+
+interface DatabaseMessage {
+  id: string;
+  username: string;
+  content: string;
+  message_type: string;
+  project_data: any;
+  created_at: string;
+}
+
+interface DatabaseProfile {
+  id: string;
+  username: string;
+  name: string | null;
+  profile_picture: string | null;
+  description: string | null;
+  social_x: string | null;
+  social_discord: string | null;
+  social_telegram: string | null;
+  xp: number;
+  level: number;
+  role: string;
+  total_earnings: number;
+  total_investment: number;
+  created_at: string;
 }
 
 const Admin: React.FC = () => {
@@ -76,9 +102,11 @@ const Admin: React.FC = () => {
         </div>
 
         <Tabs defaultValue="projects" className="w-full">
-          <TabsList className="grid grid-cols-2 mb-6 w-full">
+          <TabsList className="grid grid-cols-4 mb-6 w-full">
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="updates">Updates</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
           </TabsList>
           
           <TabsContent value="projects">
@@ -87,6 +115,14 @@ const Admin: React.FC = () => {
           
           <TabsContent value="updates">
             <UpdatesAdminTab />
+          </TabsContent>
+          
+          <TabsContent value="users">
+            <UsersAdminTab />
+          </TabsContent>
+          
+          <TabsContent value="messages">
+            <MessagesAdminTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -728,6 +764,269 @@ const UpdateAdminCard: React.FC<{
         )}
       </CardContent>
     </Card>
+  );
+};
+
+const UsersAdminTab: React.FC = () => {
+  const { theme } = useTheme();
+  const queryClient = useQueryClient();
+  const [editingUser, setEditingUser] = useState<string | null>(null);
+
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['adminUsers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as DatabaseProfile[];
+    }
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ id, role }: { id: string; role: string }) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ role })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      toast({
+        title: "User updated",
+        description: "User role has been updated successfully",
+      });
+      setEditingUser(null);
+    }
+  });
+
+  const handleRoleUpdate = (userId: string, newRole: string) => {
+    updateUserMutation.mutate({ id: userId, role: newRole });
+  };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64">Loading users...</div>;
+  }
+
+  return (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold flex items-center space-x-2">
+          <Users className="h-5 w-5" />
+          <span>Manage Users</span>
+        </h2>
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-320px)]">
+        <div className="space-y-4">
+          {users.map((user) => (
+            <Card key={user.id} className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-12 w-12 rounded-full overflow-hidden bg-background border">
+                      {user.profile_picture ? (
+                        <img 
+                          src={user.profile_picture} 
+                          alt={user.name || user.username} 
+                          className="object-cover h-full w-full"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full bg-primary/10">
+                          <span className="text-lg font-semibold">
+                            {(user.name || user.username).charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{user.name || user.username}</h3>
+                      <p className="text-sm text-muted-foreground">@{user.username}</p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Badge variant="outline">Level {user.level}</Badge>
+                        <Badge variant="secondary">{user.xp} XP</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right space-y-2">
+                    <div className="flex items-center space-x-2">
+                      {editingUser === user.id ? (
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            defaultValue={user.role}
+                            placeholder="Enter role"
+                            className="w-32"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                handleRoleUpdate(user.id, (e.target as HTMLInputElement).value);
+                              }
+                            }}
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => setEditingUser(null)}
+                            variant="outline"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Badge className="cursor-pointer" onClick={() => setEditingUser(user.id)}>
+                            {user.role}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingUser(user.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      <div>Earnings: ${Number(user.total_earnings).toFixed(2)}</div>
+                      <div>Investment: ${Number(user.total_investment).toFixed(2)}</div>
+                      <div>Joined: {new Date(user.created_at).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </ScrollArea>
+    </>
+  );
+};
+
+const MessagesAdminTab: React.FC = () => {
+  const { theme } = useTheme();
+  const queryClient = useQueryClient();
+
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: ['adminMessages'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      return data as DatabaseMessage[];
+    }
+  });
+
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminMessages'] });
+      toast({
+        title: "Message deleted",
+        description: "The message has been removed successfully",
+      });
+    }
+  });
+
+  const handleDeleteMessage = (id: string) => {
+    deleteMessageMutation.mutate(id);
+  };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64">Loading messages...</div>;
+  }
+
+  return (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold flex items-center space-x-2">
+          <MessageSquare className="h-5 w-5" />
+          <span>Manage Messages</span>
+        </h2>
+      </div>
+
+      <ScrollArea className="h-[calc(100vh-320px)]">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <Card key={message.id} className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="font-semibold">{message.username}</span>
+                      <Badge variant={message.message_type === 'project_share' ? 'default' : 'secondary'}>
+                        {message.message_type}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(message.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    
+                    {message.message_type === 'project_share' && message.project_data ? (
+                      <div className="p-3 border rounded-lg bg-muted/50 mb-2">
+                        <div className="flex items-center space-x-3">
+                          <img 
+                            src={message.project_data.logo} 
+                            alt={message.project_data.name}
+                            className="h-8 w-8 rounded-full"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/placeholder.svg";
+                            }}
+                          />
+                          <div>
+                            <h4 className="font-semibold">{message.project_data.name}</h4>
+                            {message.project_data.description && (
+                              <p className="text-sm text-muted-foreground">
+                                {message.project_data.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm mb-2">{message.content}</p>
+                    )}
+                  </div>
+                  
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDeleteMessage(message.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          
+          {messages.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No messages found</p>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </>
   );
 };
 
