@@ -85,19 +85,16 @@ const Dashboard: React.FC = () => {
           title="Total Investment"
           value={`$${totalInvestment.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4" />}
-          trend="+12%"
         />
         <MetricCard
           title="Total Earnings"
           value={`$${totalEarning.toLocaleString()}`}
           icon={<TrendingUp className="h-4 w-4" />}
-          trend="+8%"
         />
         <MetricCard
           title="Expected Returns"
           value={`$${expectedReturn.toLocaleString()}`}
           icon={<DollarSign className="h-4 w-4" />}
-          trend="+15%"
         />
       </div>
 
@@ -139,8 +136,8 @@ const Dashboard: React.FC = () => {
       <TodoSection />
 
       <AddProjectDialog
-        open={isAddProjectOpen}
-        onOpenChange={setIsAddProjectOpen}
+        isOpen={isAddProjectOpen}
+        onClose={() => setIsAddProjectOpen(false)}
       />
     </div>
   );

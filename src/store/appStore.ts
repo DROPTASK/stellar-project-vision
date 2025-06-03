@@ -255,7 +255,7 @@ export const useAppStore = create<AppStore>()(
         const state = get();
         
         try {
-          // Upsert user data
+          // Upsert user data with correct field name
           const { error } = await supabase
             .from('user_data')
             .upsert({
@@ -288,11 +288,28 @@ export const useAppStore = create<AppStore>()(
           if (error && error.code !== 'PGRST116') throw error;
 
           if (data) {
+            // Safe type checking and conversion
+            const projects = Array.isArray(data.projects_data) 
+              ? data.projects_data as unknown as Project[]
+              : [];
+            
+            const transactions = Array.isArray(data.transactions_data) 
+              ? data.transactions_data as unknown as Transaction[]
+              : [];
+            
+            const todos = Array.isArray(data.todos_data) 
+              ? data.todos_data as unknown as TodoItem[]
+              : [];
+            
+            const exploreProjects = Array.isArray(data.explore_data) 
+              ? data.explore_data as unknown as ExploreProject[]
+              : exploreCatalog;
+
             set({
-              projects: Array.isArray(data.projects_data) ? (data.projects_data as unknown as Project[]) : [],
-              transactions: Array.isArray(data.transactions_data) ? (data.transactions_data as unknown as Transaction[]) : [],
-              todos: Array.isArray(data.todos_data) ? (data.todos_data as unknown as TodoItem[]) : [],
-              exploreProjects: Array.isArray(data.explore_data) ? (data.explore_data as unknown as ExploreProject[]) : exploreCatalog,
+              projects,
+              transactions,
+              todos,
+              exploreProjects,
             });
           }
         } catch (error) {
