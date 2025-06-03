@@ -289,10 +289,10 @@ export const useAppStore = create<AppStore>()(
 
           if (data) {
             set({
-              projects: data.projects_data || [],
-              transactions: data.transactions_data || [],
-              todos: data.todos_data || [],
-              exploreProjects: data.explore_data || exploreCatalog,
+              projects: Array.isArray(data.projects_data) ? data.projects_data as Project[] : [],
+              transactions: Array.isArray(data.transactions_data) ? data.transactions_data as Transaction[] : [],
+              todos: Array.isArray(data.todos_data) ? data.todos_data as TodoItem[] : [],
+              exploreProjects: Array.isArray(data.explore_data) ? data.explore_data as ExploreProject[] : exploreCatalog,
             });
           }
         } catch (error) {

@@ -11,16 +11,17 @@ import { toast } from '@/hooks/use-toast';
 
 const Auth: React.FC = () => {
   const { theme } = useTheme();
-  const { login, register, isLoading } = useAuth();
+  const { login, signup, loading } = useAuth();
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !password.trim()) {
+    if (!email.trim() || !password.trim()) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -29,11 +30,20 @@ const Auth: React.FC = () => {
       return;
     }
 
-    const result = isLogin 
-      ? await login(username, password)
-      : await register(username, password);
+    if (!isLogin && !username.trim()) {
+      toast({
+        title: "Error",
+        description: "Username is required for registration",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    if (result.success) {
+    const result = isLogin 
+      ? await login(email, password)
+      : await signup(email, password, username);
+
+    if (!result.error) {
       toast({
         title: "Success",
         description: isLogin ? "Logged in successfully!" : "Account created successfully!",
@@ -42,7 +52,7 @@ const Auth: React.FC = () => {
     } else {
       toast({
         title: "Error",
-        description: result.error || "Something went wrong",
+        description: result.error?.message || "Something went wrong",
         variant: "destructive",
       });
     }
@@ -59,16 +69,30 @@ const Auth: React.FC = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={isLoading}
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
+            
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -78,16 +102,16 @@ const Auth: React.FC = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
+                disabled={loading}
               />
             </div>
             
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading}
+              disabled={loading}
             >
-              {isLoading ? 'Loading...' : (isLogin ? 'Login' : 'Create Account')}
+              {loading ? 'Loading...' : (isLogin ? 'Login' : 'Create Account')}
             </Button>
           </form>
           
@@ -96,7 +120,7 @@ const Auth: React.FC = () => {
               type="button"
               onClick={() => setIsLogin(!isLogin)}
               className="text-primary hover:underline"
-              disabled={isLoading}
+              disabled={loading}
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
             </button>

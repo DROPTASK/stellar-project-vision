@@ -94,7 +94,7 @@ const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({ open, onOpenChang
             <Checkbox
               id="anonymous"
               checked={isAnonymous}
-              onCheckedChange={setIsAnonymous}
+              onCheckedChange={(checked) => setIsAnonymous(checked === true)}
             />
             <Label htmlFor="anonymous">Anonymous group (hide member identities)</Label>
           </div>
