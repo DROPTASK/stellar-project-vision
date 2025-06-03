@@ -3,27 +3,61 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Menu, X } from 'lucide-react';
+import { User, LogOut, MessageSquare } from 'lucide-react';
 import { ThemeToggle } from '../theme-toggle';
 import { useTheme } from '../theme-provider';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useAppStore } from '@/store/appStore';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
   const { theme } = useTheme();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { syncToDatabase, clearAllData } = useAppStore();
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/auth');
+  const handleLogout = async () => {
+    try {
+      await clearAllData();
+      await logout();
+      navigate('/auth');
+      toast({
+        title: "Logged out",
+        description: "All data cleared and logged out successfully",
+      });
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!user) return;
+    
+    try {
+      setIsSyncing(true);
+      await syncToDatabase(user.id);
+      toast({
+        title: "Data synced",
+        description: "All your data has been synced to the database",
+      });
+    } catch (error) {
+      console.error('Error syncing data:', error);
+      toast({
+        title: "Sync failed",
+        description: "Failed to sync data to database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleProfileClick = () => {
     navigate('/profile');
-    setIsMobileMenuOpen(false);
   };
 
   const navItems = [
@@ -31,7 +65,6 @@ const Header: React.FC = () => {
     { path: '/investment', label: 'Investment' },
     { path: '/explore', label: 'Explore' },
     { path: '/conversation', label: 'Community' },
-    { path: '/todo', label: 'Todo' },
     { path: '/updates', label: 'Updates' }
   ];
 
@@ -64,110 +97,61 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Right side - Auth & Theme */}
-          <div className="flex items-center space-x-4">
+          {/* Right side - Theme, Community & Auth */}
+          <div className="flex items-center space-x-3">
             <ThemeToggle />
             
-            {user ? (
-              <div className="hidden md:flex items-center space-x-3">
+            {user && (
+              <>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleProfileClick}
-                  className="flex items-center space-x-2"
+                  onClick={() => navigate('/conversation')}
+                  className="hidden md:flex"
                 >
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback>
-                      {user.username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden lg:inline">{user.username}</span>
+                  <MessageSquare className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="p-1">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.profile_picture || ''} />
+                        <AvatarFallback>
+                          {user.username.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleProfileClick}>
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSync} disabled={isSyncing}>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      {isSyncing ? 'Syncing...' : 'Sync Data'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+
+            {!user && (
               <Button
                 variant="default"
                 size="sm"
                 onClick={() => navigate('/auth')}
-                className="hidden md:flex"
               >
                 Login
               </Button>
             )}
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden"
-            >
-              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </Button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <nav className="flex flex-col space-y-2">
-              {navItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => {
-                    navigate(item.path);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`text-left px-2 py-2 text-sm font-medium transition-colors hover:text-primary ${
-                    location.pathname === item.path
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-              
-              {user ? (
-                <div className="pt-2 border-t space-y-2">
-                  <button
-                    onClick={handleProfileClick}
-                    className="flex items-center space-x-2 px-2 py-2 text-sm font-medium text-muted-foreground hover:text-primary"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-2 px-2 py-2 text-sm font-medium text-muted-foreground hover:text-primary"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="pt-2 border-t">
-                  <button
-                    onClick={() => {
-                      navigate('/auth');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="px-2 py-2 text-sm font-medium text-muted-foreground hover:text-primary"
-                  >
-                    Login
-                  </button>
-                </div>
-              )}
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );

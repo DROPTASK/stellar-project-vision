@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2 } from 'lucide-react';
+import { LayoutDashboard, WalletCards, Briefcase, TrendingUp, PlusCircle, Share2, CheckSquare, MessageSquare } from 'lucide-react';
 import MetricCard from '../components/dashboard/MetricCard';
 import { Button } from '@/components/ui/button';
 import { useAppStore } from '../store/appStore';
@@ -8,7 +9,9 @@ import AddProjectDialog from '../components/dashboard/AddProjectDialog';
 import ShareDialog from '../components/dashboard/ShareDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import GridProjectCard from '../components/dashboard/GridProjectCard';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
+import TodoSection from '../components/dashboard/TodoSection';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { projects, getTotalInvestment, getTotalEarning, getExpectedReturn } = useAppStore();
@@ -16,6 +19,7 @@ const Dashboard: React.FC = () => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState<'list' | 'grid'>('list');
   const [currentPage, setCurrentPage] = useState(1);
+  const navigate = useNavigate();
   
   const totalProjects = projects.length;
   const totalInvestment = getTotalInvestment();
@@ -23,7 +27,7 @@ const Dashboard: React.FC = () => {
   const expectedReturn = getExpectedReturn();
 
   // Grid pagination
-  const projectsPerPage = 12; // 3 columns × 4 rows
+  const projectsPerPage = 12;
   const totalPages = Math.ceil(projects.length / projectsPerPage);
   
   const paginatedProjects = projects.slice(
@@ -59,7 +63,7 @@ const Dashboard: React.FC = () => {
         <MetricCard 
           title="Total Projects" 
           value={totalProjects}
-          valuePrefix=""  // Empty string for no prefix
+          valuePrefix=""
           icon={<LayoutDashboard className="h-5 w-5 text-purple-400" />} 
         />
         <MetricCard 
@@ -70,7 +74,7 @@ const Dashboard: React.FC = () => {
       </div>
       
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Actions</h2>
+        <h2 className="text-xl font-semibold">Quick Actions</h2>
       </div>
       
       <div className="grid grid-cols-2 gap-4 mb-6">
@@ -82,6 +86,17 @@ const Dashboard: React.FC = () => {
           Add Project
         </Button>
         <Button 
+          onClick={() => navigate('/conversation')}
+          variant="outline" 
+          className="h-auto py-3 backdrop-blur-sm"
+        >
+          <MessageSquare className="h-5 w-5 mr-2" />
+          Community
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <Button 
           onClick={() => setIsShareDialogOpen(true)}
           variant="outline" 
           className="h-auto py-3 backdrop-blur-sm"
@@ -89,6 +104,9 @@ const Dashboard: React.FC = () => {
           <Share2 className="h-5 w-5 mr-2" />
           Share
         </Button>
+        <div className="relative">
+          <TodoSection />
+        </div>
       </div>
       
       <div className="flex justify-between items-center mb-4 mt-6">
@@ -117,7 +135,7 @@ const Dashboard: React.FC = () => {
       </div>
       
       {displayMode === 'list' ? (
-        <ScrollArea className="h-[calc(100vh-380px)]">
+        <ScrollArea className="h-[calc(100vh-500px)]">
           {projects.length > 0 ? (
             projects.map((project) => (
               <ProjectCard key={project.id} project={project} />

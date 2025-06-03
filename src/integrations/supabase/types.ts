@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      conversation_participants: {
+        Row: {
+          conversation_id: string | null
+          id: string
+          joined_at: string
+          user_id: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          id?: string
+          joined_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          id?: string
+          joined_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_anonymous: boolean | null
+          name: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          name?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          name?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       explore_projects: {
         Row: {
           created_at: string
@@ -57,8 +131,10 @@ export type Database = {
       messages: {
         Row: {
           content: string
+          conversation_id: string | null
           created_at: string
           id: string
+          is_anonymous: boolean | null
           message_type: string | null
           project_data: Json | null
           user_id: string | null
@@ -66,8 +142,10 @@ export type Database = {
         }
         Insert: {
           content: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
+          is_anonymous?: boolean | null
           message_type?: string | null
           project_data?: Json | null
           user_id?: string | null
@@ -75,14 +153,23 @@ export type Database = {
         }
         Update: {
           content?: string
+          conversation_id?: string | null
           created_at?: string
           id?: string
+          is_anonymous?: boolean | null
           message_type?: string | null
           project_data?: Json | null
           user_id?: string | null
           username?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_user_id_fkey"
             columns: ["user_id"]
@@ -98,11 +185,14 @@ export type Database = {
           description: string | null
           expected_return: number | null
           id: string
+          is_profile_public: boolean | null
           level: number | null
           name: string | null
           password_hash: string
           profile_picture: string | null
           role: string | null
+          show_earnings: boolean | null
+          show_investments: boolean | null
           social_discord: string | null
           social_telegram: string | null
           social_x: string | null
@@ -117,11 +207,14 @@ export type Database = {
           description?: string | null
           expected_return?: number | null
           id?: string
+          is_profile_public?: boolean | null
           level?: number | null
           name?: string | null
           password_hash: string
           profile_picture?: string | null
           role?: string | null
+          show_earnings?: boolean | null
+          show_investments?: boolean | null
           social_discord?: string | null
           social_telegram?: string | null
           social_x?: string | null
@@ -136,11 +229,14 @@ export type Database = {
           description?: string | null
           expected_return?: number | null
           id?: string
+          is_profile_public?: boolean | null
           level?: number | null
           name?: string | null
           password_hash?: string
           profile_picture?: string | null
           role?: string | null
+          show_earnings?: boolean | null
+          show_investments?: boolean | null
           social_discord?: string | null
           social_telegram?: string | null
           social_x?: string | null
@@ -181,6 +277,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_data: {
+        Row: {
+          created_at: string
+          explore_data: Json | null
+          id: string
+          projects_data: Json | null
+          todos_data: Json | null
+          transactions_data: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          explore_data?: Json | null
+          id?: string
+          projects_data?: Json | null
+          todos_data?: Json | null
+          transactions_data?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          explore_data?: Json | null
+          id?: string
+          projects_data?: Json | null
+          todos_data?: Json | null
+          transactions_data?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_data_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_project_shares: {
         Row: {
@@ -365,6 +502,10 @@ export type Database = {
       calculate_level: {
         Args: { total_xp: number }
         Returns: number
+      }
+      sync_user_totals: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       update_user_xp: {
         Args: { p_user_id: string; p_xp_gain: number }

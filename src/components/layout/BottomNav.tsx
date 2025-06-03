@@ -1,14 +1,14 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, WalletCards, Compass, CheckSquare, HelpCircle } from 'lucide-react';
+import { Home, WalletCards, Compass, MessageSquare, HelpCircle } from 'lucide-react';
 import { useTheme } from '../theme-provider';
 
 const navItems = [
   { path: '/', icon: <Home size={18} />, text: 'Home' },
   { path: '/investment', icon: <WalletCards size={18} />, text: 'Invest' },
   { path: '/explore', icon: <Compass size={18} />, text: 'Explore' },
-  { path: '/todo', icon: <CheckSquare size={18} />, text: 'Todo' },
-  { path: '/updates', icon: <HelpCircle size={18} />, text: 'Help' },
+  { path: '/conversation', icon: <MessageSquare size={18} />, text: 'Community' },
+  { path: '/updates', icon: <HelpCircle size={18} />, text: 'Updates' },
 ];
 
 export default function BottomNav() {

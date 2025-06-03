@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useTheme } from '../components/theme-provider';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { User, Trophy, Star } from 'lucide-react';
+import { User, Trophy, Star, Shield } from 'lucide-react';
 
 interface ProfileData {
   id: string;
@@ -27,6 +28,9 @@ interface ProfileData {
   role: string;
   total_earnings: number;
   total_investment: number;
+  is_profile_public: boolean;
+  show_investments: boolean;
+  show_earnings: boolean;
 }
 
 const Profile: React.FC = () => {
@@ -80,6 +84,9 @@ const Profile: React.FC = () => {
           social_x: profile.social_x,
           social_discord: profile.social_discord,
           social_telegram: profile.social_telegram,
+          is_profile_public: profile.is_profile_public,
+          show_investments: profile.show_investments,
+          show_earnings: profile.show_earnings,
         })
         .eq('id', user.id);
 
@@ -256,14 +263,61 @@ const Profile: React.FC = () => {
             </CardContent>
           </Card>
 
+          {/* Privacy Settings */}
+          <Card className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Shield className="h-5 w-5" />
+                <span>Privacy Settings</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Public Profile</Label>
+                  <p className="text-sm text-muted-foreground">Allow others to view your profile</p>
+                </div>
+                <Switch
+                  checked={profile.is_profile_public}
+                  onCheckedChange={(checked) => setProfile({...profile, is_profile_public: checked})}
+                  disabled={!isEditing}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Show Investments</Label>
+                  <p className="text-sm text-muted-foreground">Display investment amounts</p>
+                </div>
+                <Switch
+                  checked={profile.show_investments}
+                  onCheckedChange={(checked) => setProfile({...profile, show_investments: checked})}
+                  disabled={!isEditing}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Show Earnings</Label>
+                  <p className="text-sm text-muted-foreground">Display earning amounts</p>
+                </div>
+                <Switch
+                  checked={profile.show_earnings}
+                  onCheckedChange={(checked) => setProfile({...profile, show_earnings: checked})}
+                  disabled={!isEditing}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Social Links Card */}
-          <Card className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""} md:col-span-2`}>
+          <Card className={`${theme === "bright" ? "border-[1.5px] border-black/40" : ""}`}>
             <CardHeader>
               <CardTitle>Social Links</CardTitle>
             </CardHeader>
             <CardContent>
               {isEditing ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="social_x">X (Twitter)</Label>
                     <Input
