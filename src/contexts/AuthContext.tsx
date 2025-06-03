@@ -38,28 +38,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
-    const getInitialSession = async () => {
+    const initializeAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get initial session
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
         }
         
         if (mounted) {
-          setSession(session);
-          
-          if (session?.user) {
-            await handleUserSession(session);
-          } else {
-            setUser(null);
+          if (initialSession) {
+            await handleUserSession(initialSession);
           }
-          
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        console.error('Error in initializeAuth:', error);
         if (mounted) {
           setLoading(false);
         }
@@ -69,16 +64,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        console.log('Auth state changed:', event);
         
         if (!mounted) return;
 
-        setSession(session);
-        
         if (session?.user) {
           await handleUserSession(session);
         } else {
           setUser(null);
+          setSession(null);
         }
         
         setLoading(false);
@@ -87,6 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleUserSession = async (session: Session) => {
       try {
+        setSession(session);
+        
         // Get user profile data
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -106,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             role: profile?.role,
           });
 
-          // Load user data from database
+          // Load user data from database only if logged in
           try {
             await loadFromDatabase(session.user.id);
           } catch (error) {
@@ -118,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    getInitialSession();
+    initializeAuth();
 
     return () => {
       mounted = false;

@@ -29,7 +29,7 @@ const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isSubmitting) return;
+    if (isSubmitting || loading) return;
     
     if (!email.trim() || !password.trim()) {
       toast({
@@ -62,13 +62,12 @@ const Auth: React.FC = () => {
             title: "Success",
             description: "Logged in successfully!",
           });
-          // Navigation will be handled by useEffect when user state updates
         } else {
           toast({
             title: "Success", 
             description: "Account created! Please check your email to verify your account.",
           });
-          setIsLogin(true); // Switch to login form
+          setIsLogin(true);
         }
       } else {
         toast({
@@ -92,7 +91,7 @@ const Auth: React.FC = () => {
     navigate('/admin');
   };
 
-  if (loading && user) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
