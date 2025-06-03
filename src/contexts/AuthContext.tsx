@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAppStore } from '@/store/appStore';
 
 interface AuthUser extends User {
-  username?: string;
+  username: string;
   profile_picture?: string | null;
   role?: string;
 }
@@ -33,88 +33,86 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { loadFromDatabase } = useAppStore();
+  const { loadFromDatabase, syncToDatabase } = useAppStore();
 
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
-      try {
-        // Get initial session
-        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-        }
-        
-        if (mounted) {
-          if (initialSession) {
-            await handleUserSession(initialSession);
-          }
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Error in initializeAuth:', error);
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('Auth state changed:', event, session?.user?.id);
         
         if (!mounted) return;
 
+        setSession(session);
+        
         if (session?.user) {
-          await handleUserSession(session);
+          try {
+            // Get user profile data
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+            }
+
+            if (profile && mounted) {
+              setUser({
+                ...session.user,
+                username: profile.username || '',
+                profile_picture: profile.profile_picture,
+                role: profile.role,
+              });
+
+              // Load user data from database on login
+              if (event === 'SIGNED_IN') {
+                try {
+                  setTimeout(async () => {
+                    await loadFromDatabase(session.user.id);
+                  }, 100);
+                } catch (error) {
+                  console.error('Error loading user data:', error);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error in auth state change:', error);
+          }
         } else {
-          setUser(null);
-          setSession(null);
+          if (mounted) {
+            setUser(null);
+          }
         }
         
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    const handleUserSession = async (session: Session) => {
+    // Check for existing session
+    const getInitialSession = async () => {
       try {
-        setSession(session);
-        
-        // Get user profile data
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Error fetching profile:', profileError);
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
         }
-
-        if (mounted) {
-          setUser({
-            ...session.user,
-            username: profile?.username || session.user.email?.split('@')[0] || '',
-            profile_picture: profile?.profile_picture,
-            role: profile?.role,
-          });
-
-          // Load user data from database only if logged in
-          try {
-            await loadFromDatabase(session.user.id);
-          } catch (error) {
-            console.error('Error loading user data:', error);
-          }
+        if (!session && mounted) {
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Error in handleUserSession:', error);
+        console.error('Error in getInitialSession:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    initializeAuth();
+    getInitialSession();
 
     return () => {
       mounted = false;
@@ -123,25 +121,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [loadFromDatabase]);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       return { error };
-    } catch (error) {
-      return { error };
     } finally {
-      // Don't set loading false here, let auth state change handle it
+      // Don't set loading false here, let the auth state change handle it
     }
   };
 
   const signup = async (email: string, password: string, username: string) => {
+    setLoading(true);
+    const redirectUrl = `${window.location.origin}/`;
+    
     try {
-      setLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -153,28 +149,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
       return { error };
-    } catch (error) {
-      return { error };
     } finally {
       setLoading(false);
     }
   };
 
   const logout = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      // Clear local state
-      setUser(null);
-      setSession(null);
-    } catch (error) {
-      console.error('Error during logout:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   const value = {

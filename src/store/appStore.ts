@@ -250,15 +250,16 @@ export const useAppStore = create<AppStore>()(
         }));
       },
 
-      // Data sync functions - Fixed to use correct field name
+      // Data sync functions
       syncToDatabase: async (userId: string) => {
         const state = get();
         
         try {
+          // Upsert user data
           const { error } = await supabase
             .from('user_data')
             .upsert({
-              user_id: userId, // This matches the database schema
+              user_id: userId,
               projects_data: state.projects,
               transactions_data: state.transactions,
               todos_data: state.todos,
@@ -266,10 +267,10 @@ export const useAppStore = create<AppStore>()(
               updated_at: new Date().toISOString()
             });
 
-          if (error) {
-            console.error('Error syncing to database:', error);
-            throw error;
-          }
+          if (error) throw error;
+
+          // Update totals in profile
+          await supabase.rpc('sync_user_totals', { p_user_id: userId });
         } catch (error) {
           console.error('Error syncing to database:', error);
           throw error;
@@ -284,39 +285,19 @@ export const useAppStore = create<AppStore>()(
             .eq('user_id', userId)
             .single();
 
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error loading from database:', error);
-            throw error;
-          }
+          if (error && error.code !== 'PGRST116') throw error;
 
           if (data) {
-            // Safe type checking and conversion with proper type guards
-            const projects = Array.isArray(data.projects_data) 
-              ? data.projects_data as Project[]
-              : [];
-            
-            const transactions = Array.isArray(data.transactions_data) 
-              ? data.transactions_data as Transaction[]
-              : [];
-            
-            const todos = Array.isArray(data.todos_data) 
-              ? data.todos_data as TodoItem[]
-              : [];
-            
-            const exploreProjects = Array.isArray(data.explore_data) 
-              ? data.explore_data as ExploreProject[]
-              : exploreCatalog;
-
             set({
-              projects,
-              transactions,
-              todos,
-              exploreProjects,
+              projects: Array.isArray(data.projects_data) ? (data.projects_data as unknown as Project[]) : [],
+              transactions: Array.isArray(data.transactions_data) ? (data.transactions_data as unknown as Transaction[]) : [],
+              todos: Array.isArray(data.todos_data) ? (data.todos_data as unknown as TodoItem[]) : [],
+              exploreProjects: Array.isArray(data.explore_data) ? (data.explore_data as unknown as ExploreProject[]) : exploreCatalog,
             });
           }
         } catch (error) {
           console.error('Error loading from database:', error);
-          // Don't throw here to prevent blocking app initialization
+          throw error;
         }
       },
 

@@ -17,19 +17,16 @@ const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && !loading) {
+    if (user) {
       navigate('/');
     }
-  }, [user, loading, navigate]);
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isSubmitting || loading) return;
     
     if (!email.trim() || !password.trim()) {
       toast({
@@ -50,8 +47,6 @@ const Auth: React.FC = () => {
     }
 
     try {
-      setIsSubmitting(true);
-      
       const result = isLogin 
         ? await login(email, password)
         : await signup(email, password, username);
@@ -62,12 +57,12 @@ const Auth: React.FC = () => {
             title: "Success",
             description: "Logged in successfully!",
           });
+          navigate('/');
         } else {
           toast({
-            title: "Success", 
+            title: "Success",
             description: "Account created! Please check your email to verify your account.",
           });
-          setIsLogin(true);
         }
       } else {
         toast({
@@ -82,22 +77,12 @@ const Auth: React.FC = () => {
         description: error.message || "Something went wrong",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleAdminLogin = () => {
     navigate('/admin');
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-md">
@@ -126,7 +111,7 @@ const Auth: React.FC = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isSubmitting}
+                disabled={loading}
               />
             </div>
             
@@ -139,7 +124,7 @@ const Auth: React.FC = () => {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  disabled={isSubmitting}
+                  disabled={loading}
                 />
               </div>
             )}
@@ -152,46 +137,41 @@ const Auth: React.FC = () => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={isSubmitting}
+                disabled={loading}
               />
             </div>
             
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting}
+              disabled={loading}
             >
-              {isSubmitting ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {isLogin ? 'Logging in...' : 'Creating account...'}
-                </div>
-              ) : (
-                isLogin ? 'Login' : 'Create Account'
-              )}
+              {loading ? 'Loading...' : (isLogin ? 'Login' : 'Create Account')}
             </Button>
           </form>
           
-          <div className="mt-4 text-center space-y-3">
+          <div className="mt-4 text-center space-y-2">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
               className="text-primary hover:underline"
-              disabled={isSubmitting}
+              disabled={loading}
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
             </button>
             
-            <div>
-              <button
-                type="button"
-                onClick={handleAdminLogin}
-                className="text-muted-foreground hover:text-foreground underline text-sm"
-                disabled={isSubmitting}
-              >
-                Admin Login
-              </button>
-            </div>
+            {!isLogin && (
+              <div>
+                <button
+                  type="button"
+                  onClick={handleAdminLogin}
+                  className="text-muted-foreground hover:text-foreground underline text-sm"
+                  disabled={loading}
+                >
+                  Admin Login
+                </button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

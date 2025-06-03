@@ -60,13 +60,12 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const { theme } = useTheme();
-  const { user } = useAuth();
 
   return (
     <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
       <Toaster />
       <Sonner />
-      {user && <Header />}
+      <Header />
       <main>
         <Routes>
           <Route path="/auth" element={
@@ -118,7 +117,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      {user && <BottomNav />}
+      <BottomNav />
     </div>
   );
 }
