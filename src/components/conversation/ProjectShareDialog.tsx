@@ -90,16 +90,16 @@ const ProjectShareDialog: React.FC<ProjectShareDialogProps> = ({ open, onOpenCha
       setIsSharing(true);
       const today = new Date().toISOString().split('T')[0];
 
-      // Insert message
+      // Insert message - cast project as JSON to satisfy type requirements
       const { error: messageError } = await supabase
         .from('messages')
-        .insert([{
+        .insert({
           user_id: user.id,
           username: user.username,
           content: `Shared project: ${project.name}`,
           message_type: 'project_share',
-          project_data: project
-        }]);
+          project_data: project as any // Cast to satisfy JSON type
+        });
 
       if (messageError) throw messageError;
 
