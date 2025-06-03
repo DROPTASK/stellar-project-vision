@@ -9,7 +9,6 @@ import { useTheme } from '../theme-provider';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAppStore } from '@/store/appStore';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const Header: React.FC = () => {
@@ -74,10 +73,15 @@ const Header: React.FC = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div 
-            className="font-bold text-xl cursor-pointer"
+            className="flex items-center space-x-2 cursor-pointer"
             onClick={() => navigate('/')}
           >
-            DropDeck
+            <img 
+              src="/lovable-uploads/42bbad58-2214-4745-ad42-9fff506985d7.png" 
+              alt="DropDeck Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="font-bold text-xl">DropDeck</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -118,7 +122,7 @@ const Header: React.FC = () => {
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user.profile_picture || ''} />
                         <AvatarFallback>
-                          {user.username.charAt(0).toUpperCase()}
+                          {user.username?.charAt(0)?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     </Button>

@@ -36,24 +36,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { loadFromDatabase, syncToDatabase } = useAppStore();
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (!mounted) return;
+
         setSession(session);
         
         if (session?.user) {
           try {
             // Get user profile data
-            const { data: profile } = await supabase
+            const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
 
-            if (profile) {
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+            }
+
+            if (profile && mounted) {
               setUser({
                 ...session.user,
-                username: profile.username,
+                username: profile.username || '',
                 profile_picture: profile.profile_picture,
                 role: profile.role,
               });
@@ -61,57 +71,87 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Load user data from database on login
               if (event === 'SIGNED_IN') {
                 try {
-                  await loadFromDatabase(session.user.id);
+                  setTimeout(async () => {
+                    await loadFromDatabase(session.user.id);
+                  }, 100);
                 } catch (error) {
                   console.error('Error loading user data:', error);
                 }
               }
             }
           } catch (error) {
-            console.error('Error fetching profile:', error);
+            console.error('Error in auth state change:', error);
           }
         } else {
-          setUser(null);
+          if (mounted) {
+            setUser(null);
+          }
         }
         
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // This will trigger the auth state change handler above
-      } else {
-        setLoading(false);
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+        if (!session && mounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    getInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [loadFromDatabase]);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
+    } finally {
+      // Don't set loading false here, let the auth state change handle it
+    }
   };
 
   const signup = async (email: string, password: string, username: string) => {
+    setLoading(true);
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          username,
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            username,
+          }
         }
-      }
-    });
-    return { error };
+      });
+      return { error };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {

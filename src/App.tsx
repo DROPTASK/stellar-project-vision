@@ -17,10 +17,46 @@ import Admin from "./pages/Admin";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Create QueryClient outside component to ensure it's not recreated on renders
 const queryClient = new QueryClient();
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+}
 
 function AppContent() {
   const { theme } = useTheme();
@@ -32,16 +68,51 @@ function AppContent() {
       <Header />
       <main>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/investment" element={<Investment />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/todo" element={<Todo />} />
-          <Route path="/updates" element={<Updates />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/conversation" element={<Conversation />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/auth" element={
+            <PublicRoute>
+              <Auth />
+            </PublicRoute>
+          } />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/investment" element={
+            <ProtectedRoute>
+              <Investment />
+            </ProtectedRoute>
+          } />
+          <Route path="/explore" element={
+            <ProtectedRoute>
+              <Explore />
+            </ProtectedRoute>
+          } />
+          <Route path="/todo" element={
+            <ProtectedRoute>
+              <Todo />
+            </ProtectedRoute>
+          } />
+          <Route path="/updates" element={
+            <ProtectedRoute>
+              <Updates />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/conversation" element={
+            <ProtectedRoute>
+              <Conversation />
+            </ProtectedRoute>
+          } />
+          <Route path="/leaderboard" element={
+            <ProtectedRoute>
+              <Leaderboard />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/*" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
