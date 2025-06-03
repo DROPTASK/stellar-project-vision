@@ -9,115 +9,37 @@ import Investment from "./pages/Investment";
 import Explore from "./pages/Explore";
 import Todo from "./pages/Todo";
 import Updates from "./pages/Updates";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import Conversation from "./pages/Conversation";
-import Leaderboard from "./pages/Leaderboard";
+import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
+import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Create QueryClient outside component to ensure it's not recreated on renders
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
 function AppContent() {
   const { theme } = useTheme();
+  const isAdmin = window.location.pathname.includes('/admin');
 
   return (
     <div className={`min-h-screen ${theme === 'bright' ? 'bright-bg-texture' : 'dark-bg-texture'}`}>
       <Toaster />
       <Sonner />
-      <Header />
+      {!isAdmin && <Header />}
       <main>
         <Routes>
-          <Route path="/auth" element={
-            <PublicRoute>
-              <Auth />
-            </PublicRoute>
-          } />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/investment" element={
-            <ProtectedRoute>
-              <Investment />
-            </ProtectedRoute>
-          } />
-          <Route path="/explore" element={
-            <ProtectedRoute>
-              <Explore />
-            </ProtectedRoute>
-          } />
-          <Route path="/todo" element={
-            <ProtectedRoute>
-              <Todo />
-            </ProtectedRoute>
-          } />
-          <Route path="/updates" element={
-            <ProtectedRoute>
-              <Updates />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } />
-          <Route path="/conversation" element={
-            <ProtectedRoute>
-              <Conversation />
-            </ProtectedRoute>
-          } />
-          <Route path="/leaderboard" element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          } />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/investment" element={<Investment />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/todo" element={<Todo />} />
+          <Route path="/updates" element={<Updates />} />
           <Route path="/admin/*" element={<Admin />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <BottomNav />
+      {!isAdmin && <BottomNav />}
     </div>
   );
 }
@@ -125,12 +47,10 @@ function AppContent() {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename="/">
         <ThemeProvider>
           <TooltipProvider>
-            <AuthProvider>
-              <AppContent />
-            </AuthProvider>
+            <AppContent />
           </TooltipProvider>
         </ThemeProvider>
       </BrowserRouter>

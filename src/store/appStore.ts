@@ -4,7 +4,6 @@ import { persist } from 'zustand/middleware';
 import { Project, ProjectStat, Transaction, ExploreProject, AppState, TodoItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import exploreCatalog from './exploreCatalog';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AppStore extends AppState {
   addProject: (project: Omit<Project, 'id'>) => string;
@@ -25,11 +24,6 @@ interface AppStore extends AppState {
   toggleTodoCompletion: (id: string) => void;
   removeTodo: (id: string) => void;
   resetDailyTodos: () => void;
-
-  // Data sync functions
-  syncToDatabase: (userId: string) => Promise<void>;
-  loadFromDatabase: (userId: string) => Promise<void>;
-  clearAllData: () => Promise<void>;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -55,7 +49,7 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({
           projects: [...state.projects, newProject],
         }));
-        return newProjectId;
+        return newProjectId; // Return ID so it can be used immediately
       },
 
       updateProject: (id, updates) => {
@@ -248,66 +242,6 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({
           todos: state.todos.map(todo => ({ ...todo, completed: false })),
         }));
-      },
-
-      // Data sync functions
-      syncToDatabase: async (userId: string) => {
-        const state = get();
-        
-        try {
-          // Upsert user data
-          const { error } = await supabase
-            .from('user_data')
-            .upsert({
-              user_id: userId,
-              projects_data: state.projects,
-              transactions_data: state.transactions,
-              todos_data: state.todos,
-              explore_data: state.exploreProjects,
-              updated_at: new Date().toISOString()
-            });
-
-          if (error) throw error;
-
-          // Update totals in profile
-          await supabase.rpc('sync_user_totals', { p_user_id: userId });
-        } catch (error) {
-          console.error('Error syncing to database:', error);
-          throw error;
-        }
-      },
-
-      loadFromDatabase: async (userId: string) => {
-        try {
-          const { data, error } = await supabase
-            .from('user_data')
-            .select('*')
-            .eq('user_id', userId)
-            .single();
-
-          if (error && error.code !== 'PGRST116') throw error;
-
-          if (data) {
-            set({
-              projects: Array.isArray(data.projects_data) ? (data.projects_data as unknown as Project[]) : [],
-              transactions: Array.isArray(data.transactions_data) ? (data.transactions_data as unknown as Transaction[]) : [],
-              todos: Array.isArray(data.todos_data) ? (data.todos_data as unknown as TodoItem[]) : [],
-              exploreProjects: Array.isArray(data.explore_data) ? (data.explore_data as unknown as ExploreProject[]) : exploreCatalog,
-            });
-          }
-        } catch (error) {
-          console.error('Error loading from database:', error);
-          throw error;
-        }
-      },
-
-      clearAllData: async () => {
-        set({
-          projects: [],
-          transactions: [],
-          todos: [],
-          exploreProjects: exploreCatalog,
-        });
       },
     }),
     {
