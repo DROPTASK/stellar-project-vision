@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Investment from "./pages/Investment";
 import Explore from "./pages/Explore";
@@ -11,16 +11,31 @@ import Todo from "./pages/Todo";
 import Updates from "./pages/Updates";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Auth from "./pages/Auth";
 import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
-import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Create QueryClient outside component to ensure it's not recreated on renders
 const queryClient = new QueryClient();
 
 function AppContent() {
+  const { user, loading } = useAuth();
   const { theme } = useTheme();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
+
   const isAdmin = window.location.pathname.includes('/admin');
 
   return (
@@ -50,7 +65,9 @@ const App = () => {
       <BrowserRouter basename="/">
         <ThemeProvider>
           <TooltipProvider>
-            <AppContent />
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
           </TooltipProvider>
         </ThemeProvider>
       </BrowserRouter>
