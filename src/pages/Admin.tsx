@@ -19,12 +19,14 @@ import { supabase } from '@/integrations/supabase/client';
 const Admin: React.FC = () => {
   const location = useLocation();
 
-  // Redirect to admin CMS page
   useEffect(() => {
     // If we're directly on /admin, redirect to the admin interface
     if (location.pathname === '/admin') {
+      console.log("[ADMIN] Redirecting to /admin/index.html to load Netlify CMS");
       window.location.href = '/admin/index.html';
       return;
+    } else {
+      console.log("[ADMIN] Loaded at subroute:", location.pathname);
     }
   }, [location.pathname]);
 

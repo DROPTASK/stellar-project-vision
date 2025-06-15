@@ -62,9 +62,10 @@ const Updates: React.FC = () => {
   const updatesList = data?.updates || [];
 
   const handleFaqClick = () => {
+    console.log("[FAQ/ADMIN] Password prompt opened");
     const pwd = window.prompt("Enter Admin Password:");
     if (pwd === "DEepu1234@&") {
-      // Correct password - redirect to /admin
+      console.log("[FAQ/ADMIN] Correct password entered, redirecting to /admin");
       navigate("/admin");
     } else if (pwd !== null) {
       alert("Incorrect password.");
