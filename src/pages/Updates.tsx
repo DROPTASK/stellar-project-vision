@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { useTheme } from '../components/theme-provider';
 import { ExternalLink, MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from "react-router-dom";
 
 // Define a type for our update items
 interface UpdateItem {
@@ -23,7 +23,6 @@ interface UpdatesResponse {
 
 const Updates: React.FC = () => {
   const { theme } = useTheme();
-  const navigate = useNavigate();
 
   // Fetch updates from CMS
   const { data, isLoading, error } = useQuery({
@@ -61,32 +60,8 @@ const Updates: React.FC = () => {
 
   const updatesList = data?.updates || [];
 
-  // Improve FAQ admin handler, add more debug and fallback
-  const handleFaqClick = () => {
-    console.log("[FAQ/ADMIN] Password prompt opened");
-    const pwd = window.prompt("Enter Admin Password:");
-    if (pwd === "DEepu1234@&") {
-      try {
-        // Try both using navigate and fallback to location.href
-        console.log("[FAQ/ADMIN] Correct password entered, redirecting to /admin");
-        navigate("/admin");
-        setTimeout(() => {
-          if (window.location.pathname !== "/admin" && window.location.href.indexOf("/admin") === -1) {
-            console.log("[FAQ/ADMIN] Fallback: Forcing location.href to /admin/index.html");
-            window.location.href = "/admin/index.html";
-          }
-        }, 700);
-      } catch (e) {
-        console.error("[FAQ/ADMIN] Error redirecting, fallback to location.href", e);
-        window.location.href = "/admin/index.html";
-      }
-    } else if (pwd !== null) {
-      alert("Incorrect password.");
-    }
-  };
-
   return (
-    <div className="container mx-auto px-3 sm:px-4 pb-24">
+    <div className="container mx-auto px-4 pb-24">
       <div className="mt-6 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-display font-bold">Updates</h1>
@@ -172,15 +147,6 @@ const Updates: React.FC = () => {
             </Card>
           </div>
         </ScrollArea>
-      </div>
-
-      <div className="flex justify-end">
-        <button
-          className="rounded px-4 py-2 mb-3 text-xs bg-primary text-white hover:bg-primary/80 transition"
-          onClick={handleFaqClick}
-        >
-          FAQ & Admin
-        </button>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../store/appStore';
 import { ExploreProject } from '../types';
@@ -13,20 +14,16 @@ import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 const Admin: React.FC = () => {
   const location = useLocation();
 
+  // Redirect to admin CMS page
   useEffect(() => {
     // If we're directly on /admin, redirect to the admin interface
     if (location.pathname === '/admin') {
-      console.log("[ADMIN] Redirecting to /admin/index.html to load Netlify CMS");
       window.location.href = '/admin/index.html';
       return;
-    } else {
-      console.log("[ADMIN] Loaded at subroute:", location.pathname);
     }
   }, [location.pathname]);
 
@@ -59,19 +56,11 @@ const Admin: React.FC = () => {
 
 const ProjectsAdminTab: React.FC = () => {
   const { theme } = useTheme();
-  const { data: exploreProjects = [], isLoading, refetch } = useQuery({
-    queryKey: ['explore-projects'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('explore_projects')
-        .select('*')
-        .order('order_index', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { exploreProjects } = useAppStore();
+  const [projects, setProjects] = useState<ExploreProject[]>([]);
   const [editMode, setEditMode] = useState<{ [key: string]: boolean }>({});
-  const [newProject, setNewProject] = useState<any>({
+  const [newProject, setNewProject] = useState<ExploreProject>({
+    id: uuidv4(),
     name: '',
     logo: '',
     tags: [],
@@ -80,6 +69,10 @@ const ProjectsAdminTab: React.FC = () => {
   });
   const [showNewProjectForm, setShowNewProjectForm] = useState(false);
   const [newTag, setNewTag] = useState('');
+
+  useEffect(() => {
+    setProjects([...exploreProjects]);
+  }, [exploreProjects]);
 
   const handleEditToggle = (id: string) => {
     setEditMode(prev => ({
@@ -101,7 +94,7 @@ const ProjectsAdminTab: React.FC = () => {
   };
 
   const handleAddTag = (id: string) => {
-    const project = (exploreProjects || []).find(p => p.id === id);
+    const project = projects.find(p => p.id === id);
     if (project && newTag.trim()) {
       handleTagChange(id, [...(project.tags || []), newTag.trim()]);
       setNewTag('');
@@ -109,7 +102,7 @@ const ProjectsAdminTab: React.FC = () => {
   };
 
   const handleRemoveTag = (id: string, tagIndex: number) => {
-    const project = (exploreProjects || []).find(p => p.id === id);
+    const project = projects.find(p => p.id === id);
     if (project && project.tags) {
       const newTags = [...project.tags];
       newTags.splice(tagIndex, 1);
@@ -117,38 +110,18 @@ const ProjectsAdminTab: React.FC = () => {
     }
   };
 
-  // Save All Changes now updates database
-  const handleSaveChanges = async () => {
-    // Upsert all edited projects
-    try {
-      for (const project of exploreProjects || []) {
-        await supabase
-          .from('explore_projects')
-          .upsert({ ...project, updated_at: new Date().toISOString() });
-      }
-      toast({
-        title: "Changes saved",
-        description: "Your changes have been updated in the database",
-      });
-      refetch();
-    } catch (e) {
-      toast({
-        title: "Error",
-        description: "There was a problem saving changes.",
-        variant: "destructive"
-      });
-    }
+  const handleSaveChanges = () => {
+    toast({
+      title: "Changes saved",
+      description: "Your changes have been submitted to the GitHub repository",
+    });
   };
 
-  // Add new project to database
-  const handleAddProject = async () => {
+  const handleAddProject = () => {
     if (newProject.name && newProject.logo) {
-      await supabase.from('explore_projects').insert([{
-        ...newProject,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }]);
+      setProjects(prev => [...prev, { ...newProject, id: uuidv4() }]);
       setNewProject({
+        id: uuidv4(),
         name: '',
         logo: '',
         tags: [],
@@ -158,26 +131,23 @@ const ProjectsAdminTab: React.FC = () => {
       setShowNewProjectForm(false);
       toast({
         title: "Project added",
-        description: "The new project has been added.",
+        description: "The new project has been added to the list",
       });
-      refetch();
     } else {
       toast({
         title: "Error",
         description: "Project name and logo are required",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
-  // Delete project from database
-  const handleDeleteProject = async (id: string) => {
-    await supabase.from('explore_projects').delete().eq('id', id);
+  const handleDeleteProject = (id: string) => {
+    setProjects(prev => prev.filter(project => project.id !== id));
     toast({
       title: "Project deleted",
-      description: "The project has been removed.",
+      description: "The project has been removed from the list",
     });
-    refetch();
   };
 
   const handleNewProjectTagAdd = () => {
@@ -199,14 +169,6 @@ const ProjectsAdminTab: React.FC = () => {
     }));
   };
 
-  const [projects, setProjects] = useState<any[]>([]);
-
-  useEffect(() => {
-    setProjects([...(exploreProjects || [])]);
-  }, [exploreProjects]);
-
-  if (isLoading) return <div className="text-center py-12">Loading Admin projects...</div>;
-  
   return (
     <>
       <div className="flex justify-between items-center mb-4">

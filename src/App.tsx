@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,7 +15,6 @@ import Header from "./components/layout/Header";
 import BottomNav from "./components/layout/BottomNav";
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./components/theme-provider";
-import ProjectDetail from "./pages/ProjectDetail";
 
 // Create QueryClient outside component to ensure it's not recreated on renders
 const queryClient = new QueryClient();
@@ -33,7 +33,6 @@ function AppContent() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/investment" element={<Investment />} />
           <Route path="/explore" element={<Explore />} />
-          <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/updates" element={<Updates />} />
           <Route path="/admin/*" element={<Admin />} />
