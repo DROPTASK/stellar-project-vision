@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import ProjectCard from '../components/explore/ProjectCard';
@@ -6,11 +5,19 @@ import SimpleProjectCard from '../components/explore/SimpleProjectCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '../hooks/use-mobile';
+import BannerCarousel from '../components/explore/BannerCarousel';
 
 const Explore: React.FC = () => {
   const { exploreProjects } = useAppStore();
   const isMobile = useIsMobile();
-  
+
+  // Prepare map for quick lookup (id => project)
+  const projectsMap = React.useMemo(() => {
+    const map = new Map();
+    for (const p of exploreProjects) map.set(p.id, p);
+    return map;
+  }, [exploreProjects]);
+
   // First 10 projects with detailed cards, rest with simple cards
   const detailedProjects = exploreProjects.slice(0, 10);
   const simpleProjects = exploreProjects.slice(10);
@@ -45,6 +52,10 @@ const Explore: React.FC = () => {
 
   return (
     <div className="container mx-auto px-2 sm:px-4 pb-24">
+      {/* --- Advanced auto-sliding banners --- */}
+      <BannerCarousel type="recent" projectsMap={projectsMap} />
+      <BannerCarousel type="hot" projectsMap={projectsMap} />
+
       <div className="mt-2">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Featured Projects</h2>
