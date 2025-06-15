@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { Button } from '@/components/ui/button';
@@ -90,16 +89,41 @@ const Todo: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center relative mb-3">
-            <div className="absolute inset-0 rounded-full" style={{
-              background: `conic-gradient(#8b5cf6 ${completionPercentage}%, transparent ${completionPercentage}%)`,
-              clipPath: 'circle(50% at 50% 50%)'
-            }}></div>
-            <div className="bg-black/30 rounded-full w-20 h-20 flex items-center justify-center z-10">
-              <span className="text-xl font-bold">{completionPercentage}%</span>
+          <div className="w-full max-w-xs sm:max-w-sm flex flex-col items-center gap-2">
+            <div className="w-full relative">
+              <div className="absolute left-1/2 -top-9 -translate-x-1/2 flex flex-col items-center">
+                <span
+                  className={`text-3xl font-bold ${
+                    completionPercentage === 100
+                      ? "text-green-500 animate-pulse"
+                      : "text-primary"
+                  }`}
+                >
+                  {completionPercentage}%
+                </span>
+                <span className="text-xs font-medium text-muted-foreground mt-1">
+                  {completionPercentage === 100
+                    ? "Congratulations!"
+                    : "Keep going!"}
+                </span>
+              </div>
+              <div className="relative w-full mt-8 mb-3">
+                <div className="w-full rounded-full bg-muted/50 h-6 shadow-inner overflow-hidden">
+                  <div
+                    className={`transition-all duration-700 ease-linear h-6 rounded-full
+                      ${
+                        completionPercentage === 100
+                          ? "bg-gradient-to-r from-green-400 via-emerald-500 to-lime-400 animate-pulse"
+                          : "bg-gradient-to-r from-indigo-500 via-purple-500 to-primary animate-[pulse-glow_1.5s_infinite]"
+                      }
+                    `}
+                    style={{ width: `${completionPercentage}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
-          <Button onClick={handleResetTasks} size="sm" variant="outline" className="flex items-center gap-1">
+          <Button onClick={handleResetTasks} size="sm" variant="outline" className="flex items-center gap-1 mt-3">
             <RefreshCw size={14} /> Reset Progress
           </Button>
         </CardContent>
