@@ -15,13 +15,14 @@ const Dashboard: React.FC = () => {
   const totalEarning = getTotalEarning();
   const expectedReturn = getExpectedReturn();
 
+  // Restore original MetricCard
   const MetricCard: React.FC<{ title: string; value: number; icon: React.ReactNode }> = ({
     title,
     value,
     icon,
   }) => (
-    <Card className="glass-card flex flex-col items-center justify-center p-4">
-      {icon}
+    <Card className="flex flex-col items-center justify-center p-4 rounded-xl shadow-glass border bg-white/60 dark:bg-black/50">
+      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2 text-primary">{icon}</div>
       <CardHeader>
         <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
       </CardHeader>
@@ -31,6 +32,7 @@ const Dashboard: React.FC = () => {
     </Card>
   );
 
+  // Restore original GridProjectCard styling
   const GridProjectCard: React.FC<{ project: any }> = ({ project }) => (
     <Link to={`/project/${project.id}`}>
       <CardContent className="flex flex-col gap-3 p-4">
