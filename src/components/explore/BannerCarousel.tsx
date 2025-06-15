@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -51,7 +50,17 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({ type, projectsMap }) =>
     return () => clearInterval(t);
   }, [banners]);
 
-  if (!banners.length) return null;
+  if (!banners.length)
+    return (
+      <div className="w-full max-w-3xl mx-auto my-5 rounded-2xl overflow-hidden shadow-lg bg-muted flex min-h-[110px] items-center justify-center px-6 py-8">
+        <span className="text-center text-sm text-muted-foreground font-medium opacity-80">
+          {/* Friendly placeholder, differs for hot/recent */}
+          {type === "hot"
+            ? "No Hot Banners have been added yet. (Admins can add banners in the admin panel.)"
+            : "No Recent Banners have been added yet. (Admins can add banners in the admin panel.)"}
+        </span>
+      </div>
+    );
   const banner = banners[current];
 
   // Projects for this banner
