@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { useAppStore } from '../store/appStore';
+
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import ProjectCard from '../components/explore/ProjectCard';
 import SimpleProjectCard from '../components/explore/SimpleProjectCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -7,52 +9,46 @@ import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '../hooks/use-mobile';
 import BannerCarousel from '../components/explore/BannerCarousel';
 
-const Explore: React.FC = () => {
-  const { exploreProjects } = useAppStore();
-  const isMobile = useIsMobile();
+const fetchExploreProjects = async () => {
+  const { data, error } = await supabase
+    .from('explore_projects')
+    .select('*')
+    .order('order_index', { ascending: true });
+  if (error) throw error;
+  return data;
+};
 
-  // Prepare map for quick lookup (id => project)
-  const projectsMap = React.useMemo(() => {
+const Explore: React.FC = () => {
+  const isMobile = useIsMobile();
+  const { data: exploreProjects = [], isLoading, error } = useQuery({
+    queryKey: ['explore-projects'],
+    queryFn: fetchExploreProjects,
+  });
+
+  const projectsMap = useMemo(() => {
     const map = new Map();
     for (const p of exploreProjects) map.set(p.id, p);
     return map;
   }, [exploreProjects]);
 
-  // First 10 projects with detailed cards, rest with simple cards
-  const detailedProjects = exploreProjects.slice(0, 10);
-  const simpleProjects = exploreProjects.slice(10);
-
-  // Add emojis to project details
-  const processedProjects = exploreProjects.map(project => {
-    const processed = {...project};
-    
-    // Add emojis to funding information if it exists
-    if (processed.funding) {
-      processed.funding = `💵 ${processed.funding}`;
-    }
-    
-    // Add emojis to reward information if it exists
-    if (processed.reward) {
-      processed.reward = `👌 ${processed.reward}`;
-    }
-    
-    // Add emojis to TGE information if it exists
-    if (processed.tge) {
-      processed.tge = `🗓 ${processed.tge}`;
-    }
-    
-    // Remove hydra link - no longer needed
+  // Same preprocessing as before, but dynamic
+  const processedProjects = (exploreProjects || []).map(project => {
+    const processed = { ...project };
+    if (processed.funding) processed.funding = `💵 ${processed.funding}`;
+    if (processed.reward) processed.reward = `👌 ${processed.reward}`;
+    if (processed.tge) processed.tge = `🗓 ${processed.tge}`;
     delete processed.hydraLink;
-    
     return processed;
   });
-  
+
   const processedDetailedProjects = processedProjects.slice(0, 10);
   const processedSimpleProjects = processedProjects.slice(10);
 
+  if (isLoading) return <div className="text-center mt-20 text-lg">Loading projects...</div>;
+  if (error) return <div className="text-center mt-20 text-destructive">Failed to load projects.</div>;
+
   return (
     <div className="container mx-auto px-2 sm:px-4 pb-24">
-      {/* --- Advanced auto-sliding banners --- */}
       <BannerCarousel type="recent" projectsMap={projectsMap} />
       <BannerCarousel type="hot" projectsMap={projectsMap} />
 
@@ -62,19 +58,18 @@ const Explore: React.FC = () => {
         </div>
 
         <ScrollArea className="h-[calc(100vh-200px)]">
-          <div className={`space-y-4 mb-6`}>
+          <div className="space-y-4 mb-6">
             {processedDetailedProjects.map((project) => (
               <ProjectCard 
-                key={project.id} 
+                key={project.id}
                 project={project}
+                toDetail={true} // pass prop to allow detail linking
               />
             ))}
           </div>
-          
           {processedSimpleProjects.length > 0 && (
             <>
               <Separator className="my-6 bg-white/10" />
-              
               <div className="mb-4">
                 <h2 className="text-xl font-semibold mb-4">More Projects</h2>
                 <div className="space-y-2">
@@ -82,6 +77,7 @@ const Explore: React.FC = () => {
                     <SimpleProjectCard 
                       key={project.id} 
                       project={project}
+                      toDetail={true}
                     />
                   ))}
                 </div>
