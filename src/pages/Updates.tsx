@@ -61,12 +61,25 @@ const Updates: React.FC = () => {
 
   const updatesList = data?.updates || [];
 
+  // Improve FAQ admin handler, add more debug and fallback
   const handleFaqClick = () => {
     console.log("[FAQ/ADMIN] Password prompt opened");
     const pwd = window.prompt("Enter Admin Password:");
     if (pwd === "DEepu1234@&") {
-      console.log("[FAQ/ADMIN] Correct password entered, redirecting to /admin");
-      navigate("/admin");
+      try {
+        // Try both using navigate and fallback to location.href
+        console.log("[FAQ/ADMIN] Correct password entered, redirecting to /admin");
+        navigate("/admin");
+        setTimeout(() => {
+          if (window.location.pathname !== "/admin" && window.location.href.indexOf("/admin") === -1) {
+            console.log("[FAQ/ADMIN] Fallback: Forcing location.href to /admin/index.html");
+            window.location.href = "/admin/index.html";
+          }
+        }, 700);
+      } catch (e) {
+        console.error("[FAQ/ADMIN] Error redirecting, fallback to location.href", e);
+        window.location.href = "/admin/index.html";
+      }
     } else if (pwd !== null) {
       alert("Incorrect password.");
     }
